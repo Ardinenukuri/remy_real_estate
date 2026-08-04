@@ -1,0 +1,135 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Home as HouseIcon, Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+
+export default function SignInPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitted(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-[var(--navy)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--emerald)]/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-md w-full space-y-8 relative z-10">
+        {/* Brand Header */}
+        <div className="text-center">
+          <Link href="/" className="inline-flex items-center gap-2.5 group mb-6">
+            <div className="w-10 h-10 bg-[var(--emerald)] rounded-xl flex items-center justify-center shadow-lg">
+              <HouseIcon className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex flex-col leading-none text-left">
+              <span className="text-white font-bold text-base tracking-wide">Remy</span>
+              <span className="text-[var(--emerald)] text-[11px] font-medium tracking-widest uppercase">
+                Real Estates
+              </span>
+            </div>
+          </Link>
+
+          <h1 className="font-heading text-3xl font-bold text-white">Sign In to Your Account</h1>
+          <p className="mt-2 text-xs text-slate-400">
+            Access your saved properties, active listings, and direct messages.
+          </p>
+        </div>
+
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-2xl p-8">
+          {isSubmitted ? (
+            <div className="text-center py-6 space-y-4">
+              <div className="w-14 h-14 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)] flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-[var(--navy)]">Welcome Back!</h3>
+              <p className="text-slate-500 text-xs">Successfully logged in. Access your dashboard below:</p>
+              <div className="flex flex-col gap-2 pt-2">
+                <Link
+                  href="/dashboard/customer"
+                  className="w-full py-2.5 bg-[var(--emerald)] text-white text-xs font-semibold rounded-xl text-center shadow"
+                >
+                  Go to Customer Dashboard
+                </Link>
+                <Link
+                  href="/dashboard/realtor"
+                  className="w-full py-2.5 bg-[var(--navy)] text-white text-xs font-semibold rounded-xl text-center shadow"
+                >
+                  Go to Realtor Dashboard
+                </Link>
+                <Link
+                  href="/dashboard/admin"
+                  className="w-full py-2.5 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl text-center"
+                >
+                  Go to Admin Control Panel
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="email">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-600" htmlFor="password">
+                    Password
+                  </label>
+                  <a href="#" className="text-xs text-[var(--emerald)] font-medium hover:underline">
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    id="password"
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-[var(--emerald)] hover:bg-emerald-600 text-white font-semibold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 shadow-md"
+              >
+                Sign In <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          )}
+
+          <div className="mt-6 pt-6 border-t border-slate-100 text-center text-sm text-slate-600">
+            Don't have an account yet?{' '}
+            <Link href="/register" className="text-[var(--emerald)] font-semibold hover:underline">
+              Create an account
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

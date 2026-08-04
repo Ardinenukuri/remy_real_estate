@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #0f172a;
+  --emerald: #00884C;
+  --background: #f8fafc;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: #1e293b;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-heading {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+.bg-navy {
+  background-color: var(--navy);
+}
+
+.text-navy {
+  color: var(--navy);
+}
+
+.bg-emerald {
+  background-color: var(--emerald);
+}
+
+.text-emerald {
+  color: var(--emerald);
+}
+
+.border-emerald {
+  border-color: var(--emerald);
+}
