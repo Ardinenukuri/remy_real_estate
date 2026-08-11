@@ -7,17 +7,27 @@ import { Footer } from './footer';
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
+
   const isAuthPage =
-    pathname === '/signin' ||
     pathname?.startsWith('/signin') ||
-    pathname === '/register' ||
-    pathname?.startsWith('/register');
+    pathname?.startsWith('/register') ||
+    pathname?.startsWith('/forgot-password') ||
+    pathname?.startsWith('/reset-password') ||
+    pathname?.startsWith('/verify-email');
+
+  // Hide Navbar & Footer on /dashboard, /realtor, and /customer routes
+  const isDashboardPage =
+    pathname?.startsWith('/dashboard') ||
+    pathname?.startsWith('/realtor') ||
+    pathname?.startsWith('/customer');
+
+  const hideHeaderFooter = isAuthPage || isDashboardPage;
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
+      {!hideHeaderFooter && <Navbar />}
       <main className="flex-1">{children}</main>
-      {!isAuthPage && <Footer />}
+      {!hideHeaderFooter && <Footer />}
     </>
   );
 };

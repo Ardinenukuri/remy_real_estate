@@ -12,12 +12,16 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function RegisterPage() {
   const [role, setRole] = useState<'customer' | 'realtor'>('customer');
   const [showPassword, setShowPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -29,9 +33,63 @@ export default function RegisterPage() {
     agreeTerms: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setErrorMessage(null);
+
+    // Front-end Validation
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setErrorMessage('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (!formData.agreeTerms) {
+      setErrorMessage('You must accept the Terms of Service to proceed.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      
+      const response = await fetch(`${apiUrl}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          role: role,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed. Please try again.');
+      }
+
+      // Store JWT token if backend auto-logs in user on register
+      if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+      }
+
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,7 +128,7 @@ export default function RegisterPage() {
               <div className="pt-2">
                 <Link
                   href={role === 'realtor' ? '/dashboard/realtor' : '/dashboard/customer'}
-                  className="inline-block px-6 py-3 bg-[var(--emerald)] text-white text-xs font-semibold rounded-xl shadow-md"
+                  className="inline-block px-6 py-3 bg-[var(--emerald)] text-white text-xs font-semibold rounded-xl shadow-md hover:bg-emerald-600 transition-colors"
                 >
                   Access Your Dashboard
                 </Link>
@@ -103,6 +161,14 @@ export default function RegisterPage() {
                   <BadgeCheck className="w-4 h-4" /> Realtor / Agent
                 </button>
               </div>
+
+              {/* Error Message Box */}
+              {errorMessage && (
+                <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2.5 text-red-700 text-xs font-medium">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
 
               {/* Registration Form */}
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -243,9 +309,17 @@ export default function RegisterPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-[var(--emerald)] hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors text-sm flex items-center justify-center gap-2 shadow-md"
+                  disabled={loading}
+                  className="w-full py-3.5 bg-[var(--emerald)] hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors text-sm flex items-center justify-center gap-2 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Create Account
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Creating Account...</span>
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
                 </button>
               </form>
 

@@ -1,347 +1,320 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import AdminSidebar from '@/components/admin/AdminSidebar';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
-  ShieldCheck,
-  Building2,
   Users,
+  Building2,
+  Clock,
+  Eye,
+  ArrowRight,
   CheckCircle2,
-  XCircle,
-  BarChart3,
-  LogOut,
-  BadgeCheck,
+  Loader2,
+  AlertCircle,
+  Menu,
 } from 'lucide-react';
+import { timeAgo } from '@/lib/utils';
 
-const PENDING_REALTORS = [
-  {
-    id: 'usr-1',
-    name: 'Diane Kagame',
-    email: 'diane@example.com',
-    phone: '+250 788 004 004',
-    specialty: 'Land & Development Consultant',
-    registeredDate: 'August 3, 2026',
-    status: 'Pending Verification',
-  },
-  {
-    id: 'usr-2',
-    name: 'Eric Hakizimana',
-    email: 'eric@example.com',
-    phone: '+250 788 555 123',
-    specialty: 'Commercial Property Broker',
-    registeredDate: 'August 4, 2026',
-    status: 'Pending Verification',
-  },
-];
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: 'customer' | 'realtor' | 'admin';
+  is_verified: boolean;
+}
 
-const PENDING_LISTINGS = [
-  {
-    id: 'prop-101',
-    title: 'Modern Duplex in Gacuriro',
-    realtorName: 'Jean-Paul Mugisha',
-    location: 'Gacuriro, Kigali',
-    price: '$195,000',
-    type: 'House',
-    submittedDate: 'August 4, 2026',
-    image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80',
-  },
-];
+interface Property {
+  id: string;
+  title: string;
+  is_approved: boolean;
+  created_at: string;
+  views?: number;
+  realtor?: {
+    full_name: string;
+  };
+}
+
+interface DashboardData {
+  stats: {
+    totalUsers: number;
+    totalProperties: number;
+    totalViews: number;
+    pendingRealtors: number;
+    pendingProperties: number;
+  };
+  recentUsers: UserProfile[];
+  recentProperties: Property[];
+}
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'realtors' | 'properties' | 'users'>('overview');
-  const [realtorsList, setRealtorsList] = useState(PENDING_REALTORS);
-  const [listingsList, setListingsList] = useState(PENDING_LISTINGS);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleApproveRealtor = (id: string) => {
-    setRealtorsList(realtorsList.filter((r) => r.id !== id));
-  };
+  useEffect(() => {
+    async function fetchAdminData() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const token = localStorage.getItem('accessToken');
 
-  const handleApproveListing = (id: string) => {
-    setListingsList(listingsList.filter((l) => l.id !== id));
-  };
+        const response = await fetch(`${apiUrl}/admin/dashboard-stats`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load admin dashboard statistics.');
+        }
+
+        const result = await response.json();
+        setData(result);
+      } catch (err: any) {
+        setError(err.message || 'An error occurred while fetching dashboard data.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAdminData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-24 min-h-[60vh] bg-slate-900 text-slate-100">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+        <p className="text-sm text-slate-400">Loading admin dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="p-6 my-8 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-400 text-sm">
+        <AlertCircle className="w-5 h-5 shrink-0" />
+        <span>{error || 'Unable to retrieve dashboard information.'}</span>
+      </div>
+    );
+  }
+
+  const { stats, recentUsers, recentProperties } = data;
+  const pendingTotal = stats.pendingRealtors + stats.pendingProperties;
+
+  const statCards = [
+    {
+      label: 'Total Users',
+      value: stats.totalUsers,
+      icon: Users,
+      color: 'bg-blue-500/10 text-blue-400',
+      link: '/dashboard/admin/users',
+    },
+    {
+      label: 'Total Properties',
+      value: stats.totalProperties,
+      icon: Building2,
+      color: 'bg-emerald-500/10 text-emerald-400',
+      link: '/dashboard/admin/properties',
+    },
+    {
+      label: 'Total Views',
+      value: stats.totalViews,
+      icon: Eye,
+      color: 'bg-purple-500/10 text-purple-400',
+      link: '/dashboard/admin/reports',
+    },
+    {
+      label: 'Pending Approvals',
+      value: pendingTotal,
+      icon: Clock,
+      color: 'bg-amber-500/10 text-amber-400',
+      link: '/dashboard/admin/users',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
-      {/* Admin Header */}
-      <div className="bg-[var(--navy)] text-white py-8 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--emerald)] flex items-center justify-center font-bold text-white shadow-lg">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-heading text-2xl font-bold">Admin Command Center</h1>
-                <span className="px-2.5 py-0.5 bg-emerald-500/20 text-[var(--emerald)] border border-[var(--emerald)]/40 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  Super Admin
-                </span>
-              </div>
-              <p className="text-xs text-white/60">Product Manager: Nukuri Ardine Martine</p>
-            </div>
+    <div className="min-h-screen bg-slate-900 flex text-slate-100">
+      {/* Sidebar Component */}
+      <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Mobile Header */}
+        <header className="h-16 border-b border-slate-800 bg-slate-950 px-6 flex items-center gap-4 lg:hidden sticky top-0 z-40">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-slate-400 hover:text-white"
+            aria-label="Open sidebar"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          <span className="font-bold text-white">Admin Dashboard</span>
+        </header>
+
+        {/* Dashboard Main Container */}
+        <main className="space-y-8 p-6 max-w-7xl w-full mx-auto">
+          {/* Section Header */}
+          <div>
+            <h1 className="font-heading font-extrabold text-2xl text-white">
+              Admin Dashboard
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">
+              System-wide metrics and pending management approvals.
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5"
-            >
-              <LogOut className="w-3.5 h-3.5" /> Sign Out
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Dashboard Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        {/* Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400 font-medium">Total Registered Users</p>
-              <p className="text-2xl font-bold text-[var(--navy)]">1,420</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400 font-medium">Pending Realtor Approvals</p>
-              <p className="text-2xl font-bold text-amber-600">{realtorsList.length}</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <BadgeCheck className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400 font-medium">Pending Property Approvals</p>
-              <p className="text-2xl font-bold text-amber-600">{listingsList.length}</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Building2 className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400 font-medium">Active Listings Published</p>
-              <p className="text-2xl font-bold text-[var(--emerald)]">1,200+</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[var(--emerald)] flex items-center justify-center">
-              <BarChart3 className="w-5 h-5" />
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <aside className="space-y-1">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-colors ${
-                activeTab === 'overview'
-                  ? 'bg-[var(--navy)] text-white shadow'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-100'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4 text-[var(--emerald)]" /> Overview & Metrics
-            </button>
-
-            <button
-              onClick={() => setActiveTab('realtors')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-colors ${
-                activeTab === 'realtors'
-                  ? 'bg-[var(--navy)] text-white shadow'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-100'
-              }`}
-            >
-              <BadgeCheck className="w-4 h-4 text-[var(--emerald)]" /> Realtor Approvals ({realtorsList.length})
-            </button>
-
-            <button
-              onClick={() => setActiveTab('properties')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-colors ${
-                activeTab === 'properties'
-                  ? 'bg-[var(--navy)] text-white shadow'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-100'
-              }`}
-            >
-              <Building2 className="w-4 h-4 text-[var(--emerald)]" /> Property Approvals ({listingsList.length})
-            </button>
-
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-colors ${
-                activeTab === 'users'
-                  ? 'bg-[var(--navy)] text-white shadow'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-100'
-              }`}
-            >
-              <Users className="w-4 h-4 text-[var(--emerald)]" /> User Management
-            </button>
-          </aside>
-
-          <main className="md:col-span-3 space-y-6">
-            {/* OVERVIEW */}
-            {activeTab === 'overview' && (
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
-                <h2 className="font-heading text-xl font-bold text-[var(--navy)] border-b border-slate-100 pb-3">
-                  Platform Performance Summary
-                </h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-2xl text-center space-y-1">
-                    <p className="text-2xl font-bold text-[var(--navy)]">$2.5M</p>
-                    <p className="text-xs text-slate-400">Total Transaction Value</p>
+          {/* Stats Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {statCards.map((s) => {
+              const Icon = s.icon;
+              return (
+                <Link
+                  key={s.label}
+                  href={s.link}
+                  className="bg-slate-950 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all group"
+                >
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}
+                  >
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl text-center space-y-1">
-                    <p className="text-2xl font-bold text-[var(--emerald)]">99.9%</p>
-                    <p className="text-xs text-slate-400">Target Platform Uptime</p>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl text-center space-y-1">
-                    <p className="text-2xl font-bold text-blue-600">850+</p>
-                    <p className="text-xs text-slate-400">Completed Transactions</p>
-                  </div>
-                </div>
-              </div>
-            )}
+                  <p className="text-2xl font-bold text-white">{s.value}</p>
+                  <p className="text-sm text-slate-400">{s.label}</p>
+                  <span className="text-xs text-emerald-400 font-medium flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+                    View <ArrowRight className="w-3 h-3" />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
 
-            {/* REALTORS APPROVAL QUEUE */}
-            {activeTab === 'realtors' && (
-              <div className="space-y-4">
-                <h2 className="font-heading text-xl font-bold text-[var(--navy)]">Pending Realtor Approvals</h2>
-
-                {realtorsList.length === 0 ? (
-                  <div className="bg-white p-8 rounded-2xl text-center text-slate-400 text-xs">
-                    No pending realtor verification applications.
-                  </div>
-                ) : (
-                  realtorsList.map((r) => (
-                    <div
-                      key={r.id}
-                      className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-[var(--navy)] text-sm">{r.name}</h3>
-                          <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-semibold rounded">
-                            {r.status}
-                          </span>
-                        </div>
-                        <p className="text-xs text-[var(--emerald)] font-medium">{r.specialty}</p>
-                        <p className="text-xs text-slate-400">
-                          Email: {r.email} • Phone: {r.phone}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleApproveRealtor(r.id)}
-                          className="px-4 py-2 bg-[var(--emerald)] hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl flex items-center gap-1 shadow"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                        </button>
-                        <button
-                          onClick={() => handleApproveRealtor(r.id)}
-                          className="px-4 py-2 border border-slate-200 text-slate-600 hover:text-red-600 text-xs font-semibold rounded-xl flex items-center gap-1"
-                        >
-                          <XCircle className="w-3.5 h-3.5" /> Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))
+          {/* Pending Approvals Alert Section */}
+          {pendingTotal > 0 && (
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6">
+              <h2 className="font-bold text-lg text-amber-400 mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-amber-400" /> Pending Approvals
+              </h2>
+              <div className="space-y-3">
+                {stats.pendingRealtors > 0 && (
+                  <Link
+                    href="/dashboard/admin/users"
+                    className="flex items-center justify-between p-3.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-slate-700 transition-all"
+                  >
+                    <span className="text-sm text-slate-300">
+                      {stats.pendingRealtors} realtor{' '}
+                      {stats.pendingRealtors === 1 ? 'account' : 'accounts'} awaiting verification
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-emerald-400" />
+                  </Link>
+                )}
+                {stats.pendingProperties > 0 && (
+                  <Link
+                    href="/dashboard/admin/properties"
+                    className="flex items-center justify-between p-3.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-slate-700 transition-all"
+                  >
+                    <span className="text-sm text-slate-300">
+                      {stats.pendingProperties}{' '}
+                      {stats.pendingProperties === 1 ? 'property' : 'properties'} awaiting approval
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-emerald-400" />
+                  </Link>
                 )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* PROPERTY APPROVAL QUEUE */}
-            {activeTab === 'properties' && (
-              <div className="space-y-4">
-                <h2 className="font-heading text-xl font-bold text-[var(--navy)]">Pending Property Listings</h2>
-
-                {listingsList.length === 0 ? (
-                  <div className="bg-white p-8 rounded-2xl text-center text-slate-400 text-xs">
-                    No pending property listing submissions.
-                  </div>
-                ) : (
-                  listingsList.map((prop) => (
-                    <div
-                      key={prop.id}
-                      className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4"
+          {/* Recent Activity: Users + Properties */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Users Card */}
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-lg text-white">Recent Users</h2>
+                <Link
+                  href="/dashboard/admin/users"
+                  className="text-xs text-emerald-400 font-semibold hover:underline"
+                >
+                  View All
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {recentUsers.slice(0, 5).map((u) => (
+                  <div
+                    key={u.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800/80"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-sm shrink-0">
+                      {u.full_name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-white truncate">
+                        {u.full_name}
+                      </p>
+                      <p className="text-xs text-slate-400 truncate">{u.email}</p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                        u.role === 'admin'
+                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          : u.role === 'realtor'
+                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          : 'bg-slate-800 text-slate-300 border border-slate-700'
+                      }`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-slate-100">
-                          <Image src={prop.image} alt={prop.title} fill className="object-cover" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-[var(--navy)] text-sm">{prop.title}</h3>
-                          <p className="text-xs text-slate-400">
-                            Realtor: {prop.realtorName} • {prop.location}
-                          </p>
-                          <p className="text-xs font-bold text-[var(--emerald)] mt-1">{prop.price}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleApproveListing(prop.id)}
-                          className="px-4 py-2 bg-[var(--emerald)] text-white text-xs font-semibold rounded-xl flex items-center gap-1 shadow"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Publish
-                        </button>
-                        <button
-                          onClick={() => handleApproveListing(prop.id)}
-                          className="px-4 py-2 border border-slate-200 text-slate-600 hover:text-red-600 text-xs font-semibold rounded-xl flex items-center gap-1"
-                        >
-                          <XCircle className="w-3.5 h-3.5" /> Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
+                      {u.role}
+                    </span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
-            {/* USERS MANAGEMENT */}
-            {activeTab === 'users' && (
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-                <h2 className="font-heading text-xl font-bold text-[var(--navy)] border-b border-slate-100 pb-3">
-                  User Management
-                </h2>
-
-                <div className="divide-y divide-slate-100 text-xs">
-                  <div className="py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-[var(--navy)]">Jean-Paul Mugisha</p>
-                      <p className="text-slate-400">Realtor • Verified</p>
-                    </div>
-                    <span className="px-2.5 py-1 bg-emerald-50 text-[var(--emerald)] font-semibold rounded-md">Active</span>
-                  </div>
-
-                  <div className="py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-[var(--navy)]">Aline Uwimana</p>
-                      <p className="text-slate-400">Realtor • Verified</p>
-                    </div>
-                    <span className="px-2.5 py-1 bg-emerald-50 text-[var(--emerald)] font-semibold rounded-md">Active</span>
-                  </div>
-
-                  <div className="py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-[var(--navy)]">David Kagame</p>
-                      <p className="text-slate-400">Customer</p>
-                    </div>
-                    <span className="px-2.5 py-1 bg-emerald-50 text-[var(--emerald)] font-semibold rounded-md">Active</span>
-                  </div>
-                </div>
+            {/* Recent Properties Card */}
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-lg text-white">Recent Properties</h2>
+                <Link
+                  href="/dashboard/admin/properties"
+                  className="text-xs text-emerald-400 font-semibold hover:underline"
+                >
+                  View All
+                </Link>
               </div>
-            )}
-          </main>
-        </div>
+              <div className="space-y-3">
+                {recentProperties.slice(0, 5).map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800/80"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-white truncate">{p.title}</p>
+                      <p className="text-xs text-slate-400 truncate">
+                        {p.realtor?.full_name || 'Unknown'} · {timeAgo(p.created_at)}
+                      </p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${
+                        p.is_approved
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      }`}
+                    >
+                      {p.is_approved ? (
+                        <CheckCircle2 className="w-3 h-3" />
+                      ) : (
+                        <Clock className="w-3 h-3" />
+                      )}
+                      {p.is_approved ? 'Approved' : 'Pending'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );

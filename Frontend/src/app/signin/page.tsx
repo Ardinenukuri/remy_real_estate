@@ -2,16 +2,77 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Home as HouseIcon, Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  Home as HouseIcon,
+  Mail,
+  Lock,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+} from 'lucide-react';
 
 export default function SignInPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Resolves target dashboard route based on user role
+  const getDashboardPath = (role?: string) => {
+    const normalizedRole = role?.toLowerCase() || '';
+
+    switch (normalizedRole) {
+      case 'admin':
+        return '/dashboard/admin';
+      case 'realtor':
+        return '/dashboard/realtor';
+      case 'customer':
+      case 'client':
+      default:
+        return '/customer/dashboard';
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setErrorMessage(null);
+    setLoading(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid email or password.');
+      }
+
+      // 1. Store credentials locally
+      if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+      }
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      // 2. Determine target path and perform immediate redirection
+      const targetPath = getDashboardPath(data.user?.role);
+      router.push(targetPath);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'An error occurred during sign in.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,85 +103,74 @@ export default function SignInPage() {
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
-          {isSubmitted ? (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-14 h-14 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)] flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-[var(--navy)]">Welcome Back!</h3>
-              <p className="text-slate-500 text-xs">Successfully logged in. Access your dashboard below:</p>
-              <div className="flex flex-col gap-2 pt-2">
-                <Link
-                  href="/dashboard/customer"
-                  className="w-full py-2.5 bg-[var(--emerald)] text-white text-xs font-semibold rounded-xl text-center shadow"
-                >
-                  Go to Customer Dashboard
-                </Link>
-                <Link
-                  href="/dashboard/realtor"
-                  className="w-full py-2.5 bg-[var(--navy)] text-white text-xs font-semibold rounded-xl text-center shadow"
-                >
-                  Go to Realtor Dashboard
-                </Link>
-                <Link
-                  href="/dashboard/admin"
-                  className="w-full py-2.5 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl text-center"
-                >
-                  Go to Admin Control Panel
-                </Link>
+          {/* Error Alert Box */}
+          {errorMessage && (
+            <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2.5 text-red-700 text-xs font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="email">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                />
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="email">
-                  Email Address
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600" htmlFor="password">
+                  Password
                 </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
-                  />
-                </div>
+                <a href="/forgot-password" className="text-xs text-[var(--emerald)] font-medium hover:underline">
+                  Forgot password?
+                </a>
               </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-600" htmlFor="password">
-                    Password
-                  </label>
-                  <a href="#" className="text-xs text-[var(--emerald)] font-medium hover:underline">
-                    Forgot password?
-                  </a>
-                </div>
-                <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    id="password"
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
-                  />
-                </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                />
               </div>
+            </div>
 
-              <button
-                type="submit"
-                className="w-full py-3.5 bg-[var(--emerald)] hover:bg-emerald-600 text-white font-semibold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 shadow-md"
-              >
-                Sign In <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-[var(--emerald)] hover:bg-emerald-600 text-white font-semibold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
 
           <div className="mt-6 pt-6 border-t border-slate-100 text-center text-sm text-slate-600">
             Don't have an account yet?{' '}

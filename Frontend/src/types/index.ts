@@ -1,6 +1,6 @@
 export type PropertyType = 'house' | 'apartment' | 'condo' | 'villa' | 'land';
 export type PropertyStatus = 'for_sale' | 'for_rent' | 'sold' | 'pending';
-export type UserRole = 'buyer' | 'agent' | 'admin';
+export type UserRole = 'customer' | 'realtor' | 'admin';
 
 export interface User {
   id: string;
@@ -12,19 +12,39 @@ export interface User {
   createdAt: string;
 }
 
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: 'customer' | 'realtor' | 'admin';
+  is_verified?: boolean;
+  is_verified_realtor?: boolean;
+  is_banned?: boolean;
+  banned_at?: Date | string | null;
+  phone?: string | null;
+  company?: string | null;
+  created_at?: Date | string | null;
+}
+
 export interface Property {
   id: string;
   title: string;
   description: string;
   price: number;
-  type: PropertyType;
-  status: PropertyStatus;
-  location: string;
+  type?: string;
+  status?: string;
+  location?: string;
   city?: string;
-  bedrooms: number;
-  bathrooms: number;
+  district?: string;
+  category?: string;
+  bedrooms?: number;
+  bathrooms?: number;
   areaSqFt?: number;
   imageUrls?: string[];
-  owner?: User;
-  createdAt: string;
+  is_approved?: boolean;
+  is_featured?: boolean;
+  views?: number;
+  created_at?: Date | string | number | null;
+  realtor?: Profile | null;
+  createdAt?: string;
 }
