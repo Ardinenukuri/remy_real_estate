@@ -84,9 +84,9 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-24 min-h-[60vh] bg-slate-900 text-slate-100">
+      <div className="flex flex-col items-center justify-center gap-3 py-24 min-h-[60vh] bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-        <p className="text-sm text-slate-400">Loading admin dashboard...</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Loading admin dashboard...</p>
       </div>
     );
   }
@@ -135,32 +135,32 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 flex text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex text-slate-900 dark:text-slate-100">
       {/* Sidebar Component */}
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Mobile Header */}
-        <header className="h-16 border-b border-slate-800 bg-slate-950 px-6 flex items-center gap-4 lg:hidden sticky top-0 z-40">
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 px-6 flex items-center gap-4 lg:hidden sticky top-0 z-40">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="text-slate-400 hover:text-white"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             aria-label="Open sidebar"
           >
             <Menu className="w-6 h-6" />
           </button>
-          <span className="font-bold text-white">Admin Dashboard</span>
+          <span className="font-bold text-slate-900 dark:text-white">Admin Dashboard</span>
         </header>
 
         {/* Dashboard Main Container */}
         <main className="space-y-8 p-6 max-w-7xl w-full mx-auto">
           {/* Section Header */}
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-white">
+            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">
               Admin Dashboard
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
               System-wide metrics and pending management approvals.
             </p>
           </div>
@@ -173,15 +173,15 @@ export default function AdminDashboardPage() {
                 <Link
                   key={s.label}
                   href={s.link}
-                  className="bg-slate-950 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all group"
+                  className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-all group"
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}
                   >
                     <Icon className="w-5 h-5" />
                   </div>
-                  <p className="text-2xl font-bold text-white">{s.value}</p>
-                  <p className="text-sm text-slate-400">{s.label}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{s.value}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{s.label}</p>
                   <span className="text-xs text-emerald-400 font-medium flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
                     View <ArrowRight className="w-3 h-3" />
                   </span>
@@ -200,9 +200,9 @@ export default function AdminDashboardPage() {
                 {stats.pendingRealtors > 0 && (
                   <Link
                     href="/dashboard/admin/users"
-                    className="flex items-center justify-between p-3.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-slate-700 transition-all"
+                    className="flex items-center justify-between p-3.5 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all"
                   >
-                    <span className="text-sm text-slate-300">
+                    <span className="text-sm text-slate-600 dark:text-slate-300">
                       {stats.pendingRealtors} realtor{' '}
                       {stats.pendingRealtors === 1 ? 'account' : 'accounts'} awaiting verification
                     </span>
@@ -212,9 +212,9 @@ export default function AdminDashboardPage() {
                 {stats.pendingProperties > 0 && (
                   <Link
                     href="/dashboard/admin/properties"
-                    className="flex items-center justify-between p-3.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-slate-700 transition-all"
+                    className="flex items-center justify-between p-3.5 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all"
                   >
-                    <span className="text-sm text-slate-300">
+                    <span className="text-sm text-slate-600 dark:text-slate-300">
                       {stats.pendingProperties}{' '}
                       {stats.pendingProperties === 1 ? 'property' : 'properties'} awaiting approval
                     </span>
@@ -228,9 +228,9 @@ export default function AdminDashboardPage() {
           {/* Recent Activity: Users + Properties */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Users Card */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-lg text-white">Recent Users</h2>
+                <h2 className="font-bold text-lg text-slate-900 dark:text-white">Recent Users</h2>
                 <Link
                   href="/dashboard/admin/users"
                   className="text-xs text-emerald-400 font-semibold hover:underline"
@@ -242,16 +242,16 @@ export default function AdminDashboardPage() {
                 {recentUsers.slice(0, 5).map((u) => (
                   <div
                     key={u.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800/80"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80"
                   >
                     <div className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-sm shrink-0">
                       {u.full_name?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-white truncate">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                         {u.full_name}
                       </p>
-                      <p className="text-xs text-slate-400 truncate">{u.email}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{u.email}</p>
                     </div>
                     <span
                       className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
@@ -259,7 +259,7 @@ export default function AdminDashboardPage() {
                           ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                           : u.role === 'realtor'
                           ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                          : 'bg-slate-800 text-slate-300 border border-slate-700'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700'
                       }`}
                     >
                       {u.role}
@@ -270,9 +270,9 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Recent Properties Card */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-lg text-white">Recent Properties</h2>
+                <h2 className="font-bold text-lg text-slate-900 dark:text-white">Recent Properties</h2>
                 <Link
                   href="/dashboard/admin/properties"
                   className="text-xs text-emerald-400 font-semibold hover:underline"
@@ -284,14 +284,14 @@ export default function AdminDashboardPage() {
                 {recentProperties.slice(0, 5).map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800/80"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80"
                   >
                     <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
                       <Building2 className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-white truncate">{p.title}</p>
-                      <p className="text-xs text-slate-400 truncate">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{p.title}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                         {p.realtor?.full_name || 'Unknown'} · {timeAgo(p.created_at)}
                       </p>
                     </div>

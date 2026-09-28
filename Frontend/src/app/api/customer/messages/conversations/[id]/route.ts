@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Never cache this route - always proxy through to the backend for live data.
+export const dynamic = 'force-dynamic';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -15,9 +17,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
-
-    const backendResponse = await fetch(`${API_BASE_URL}/customer/messages/conversations/${id}`, {
+    const backendResponse = await fetch(`${API_BASE_URL}/customer/messages/conversations/${params.id}`, {
       method: 'GET',
       headers: {
         Authorization: authHeader,
@@ -49,20 +49,24 @@ export async function POST(
       );
     }
 
-    const { id } = params;
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const content = body.content || body.message || '';
 
-    const backendResponse = await fetch(`${API_BASE_URL}/customer/messages/conversations/${id}`, {
+    if (!content.trim()) {
+      return NextResponse.json({ error: 'Message content cannot be empty' }, { status: 400 });
+    }
+
+    const backendResponse = await fetch(`${API_BASE_URL}/customer/messages/conversations/${params.id}`, {
       method: 'POST',
       headers: {
         Authorization: authHeader,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ content: body.content }),
+      body: JSON.stringify({ content }),
     });
 
     const data = await backendResponse.json().catch(() => null);
-    return NextResponse.json(data ?? { message: 'Message sent' }, {
+    return NextResponse.json(data ?? { error: 'Failed to send message' }, {
       status: backendResponse.status,
     });
   } catch (error) {

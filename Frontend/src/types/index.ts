@@ -23,7 +23,15 @@ export interface Profile {
   banned_at?: Date | string | null;
   phone?: string | null;
   company?: string | null;
+  cv_url?: string | null;
+  motivation_letter?: string | null;
   created_at?: Date | string | null;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug?: string;
 }
 
 export interface Property {
@@ -41,10 +49,16 @@ export interface Property {
   bathrooms?: number;
   areaSqFt?: number;
   imageUrls?: string[];
+  images?: string[];
   is_approved?: boolean;
   is_featured?: boolean;
   views?: number;
   created_at?: Date | string | number | null;
   realtor?: Profile | null;
   createdAt?: string;
+  // Realtor-specific fields
+  slug?: string;
+  currency?: string;
+  listing_type?: string;
+  size?: number;
 }

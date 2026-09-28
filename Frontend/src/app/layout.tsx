@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AppLayout } from '@/components/layout/app-layout';
+import { ThemeProvider, themeInitScript } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Remy Real Estates — Luxury Property Listings in Rwanda',
@@ -14,9 +15,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-[var(--emerald)] selection:text-white">
-        <AppLayout>{children}</AppLayout>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className="min-h-screen flex flex-col bg-background text-body antialiased selection:bg-[var(--emerald)] selection:text-white"
+        suppressHydrationWarning
+      >
+        {/* Sets the .dark class on <html> before hydration, so the correct
+            theme paints on first frame instead of flashing light then dark. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ThemeProvider>
+          <AppLayout>{children}</AppLayout>
+        </ThemeProvider>
       </body>
     </html>
   );

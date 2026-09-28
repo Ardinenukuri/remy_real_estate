@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Never cache this route - always proxy through to the backend for live data.
+export const dynamic = 'force-dynamic';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 

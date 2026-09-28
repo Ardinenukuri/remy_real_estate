@@ -3,12 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/theme-toggle';
 import {
   Home as HouseIcon,
   LayoutDashboard,
   Building2,
   PlusCircle,
-  Mail,
+  MessageSquare,
   Calendar,
   BarChart3,
   User,
@@ -29,6 +30,7 @@ interface UserSession {
   firstName?: string;
   lastName?: string;
   role?: string;
+  avatarUrl?: string;
 }
 
 export default function RealtorSidebar({
@@ -38,28 +40,63 @@ export default function RealtorSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<UserSession | null>(null);
+  const [counts, setCounts] = useState({ pendingAppointments: 0, unreadMessages: 0 });
 
   const realtorNavigation = [
     { label: 'Overview', to: '/realtor', icon: LayoutDashboard },
     { label: 'My Listings', to: '/realtor/listings', icon: Building2 },
     { label: 'Add Listing', to: '/realtor/listings/new', icon: PlusCircle },
-    { label: 'Inquiries', to: '/realtor/inquiries', icon: Mail },
-    { label: 'Appointments', to: '/realtor/appointments', icon: Calendar },
+    { label: 'Messages', to: '/realtor/messages', icon: MessageSquare, badge: counts.unreadMessages },
+    { label: 'Appointments', to: '/realtor/appointments', icon: Calendar, badge: counts.pendingAppointments },
     { label: 'Analytics', to: '/realtor/analytics', icon: BarChart3 },
     { label: 'Profile', to: '/realtor/profile', icon: User },
   ];
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const loadUser = () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (err) {
+          console.error('Failed to parse user session from localStorage:', err);
+        }
+      }
+    };
+
+    loadUser();
+    window.addEventListener('user-profile-updated', loadUser);
+    return () => window.removeEventListener('user-profile-updated', loadUser);
+  }, []);
+
+  useEffect(() => {
+    async function loadCounts() {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+        const res = await fetch('/api/realtor/notifications/counts', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCounts({
+            pendingAppointments: data.pendingAppointments || 0,
+            unreadMessages: data.unreadMessages || 0,
+          });
+        } else if (res.status === 401) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('user');
+          router.push('/signin?session_ended=1');
+        }
       } catch (err) {
-        console.error('Failed to parse user session from localStorage:', err);
+        console.error('Failed to load notification counts:', err);
       }
     }
-  }, []);
+
+    loadCounts();
+    const interval = setInterval(loadCounts, 15000);
+    return () => clearInterval(interval);
+  }, [pathname]);
 
   const handleSignOut = () => {
     localStorage.removeItem('accessToken');
@@ -84,9 +121,14 @@ export default function RealtorSidebar({
         />
       )}
 
-      {/* Sidebar Panel - Locked to Screen Height */}
+      {/* Layout Spacer - reserves the sidebar's width in the page's flex row
+          on desktop, since the sidebar itself is pulled out of normal flow
+          below (position: fixed) so it can never move with page scroll. */}
+      <div className="hidden lg:block w-64 shrink-0" aria-hidden="true" />
+
+      {/* Sidebar Panel - truly fixed to the viewport, independent of page content height */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 h-screen sticky top-0 bg-slate-950 border-r border-slate-800 flex flex-col justify-between shrink-0 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -106,13 +148,17 @@ export default function RealtorSidebar({
               </div>
             </Link>
 
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-900 transition-colors"
-              aria-label="Close sidebar"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <ThemeToggle className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-900 transition-colors" />
+
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-900 transition-colors"
+                aria-label="Close sidebar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Navigation Items */}
@@ -140,7 +186,16 @@ export default function RealtorSidebar({
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.label}</span>
+                  <span className="flex-1">{item.label}</span>
+                  {!!item.badge && (
+                    <span
+                      className={`min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                        isActive ? 'bg-white/25 text-white' : 'bg-emerald-500 text-white'
+                      }`}
+                    >
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -151,9 +206,17 @@ export default function RealtorSidebar({
         <div className="p-4 border-t border-slate-800 bg-slate-950 shrink-0 space-y-3">
           <div className="flex items-center gap-3 px-2">
             <div className="relative shrink-0">
-              <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-emerald-400 text-sm">
-                {avatarInitial}
-              </div>
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={displayName}
+                  className="w-9 h-9 rounded-full object-cover border border-slate-700"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-emerald-400 text-sm">
+                  {avatarInitial}
+                </div>
+              )}
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-950 rounded-full" />
             </div>
 

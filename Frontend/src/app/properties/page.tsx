@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import {
   MapPin,
   Search,
@@ -14,145 +15,133 @@ import {
   Bed,
   Bath,
   Maximize2,
+  Building2,
+  Loader2,
 } from 'lucide-react';
 
-const PROPERTIES_LIST = [
-  {
-    slug: 'family-home-gacuriro',
-    title: 'Family Home with Pool, Gacuriro',
-    location: 'KG 23 Ave, Gacuriro, Kigali',
-    price: '$220,000',
-    type: 'For Sale',
-    category: 'Houses',
-    beds: 4,
-    baths: 3,
-    sqft: '2,800',
-    realtor: 'Aline U.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'cozy-apartment-remera',
-    title: 'Cozy 2BR Apartment in Remera',
-    location: 'KG 9 Ave, Remera, Kigali',
-    price: '$1,200/mo',
-    type: 'For Rent',
-    category: 'Apartments',
-    beds: 2,
-    baths: 1,
-    sqft: '950',
-    realtor: 'Patrick N.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'executive-penthouse-kimihurura',
-    title: 'Executive Penthouse in Kimihurura',
-    location: 'KG 11 Ave, Kimihurura, Kigali',
-    price: '$4,500/mo',
-    type: 'For Rent',
-    category: 'Penthouses',
-    beds: 4,
-    baths: 3,
-    sqft: '3,100',
-    realtor: 'Patrick N.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'land-plot-kanombe',
-    title: 'Prime Land Plot in Kanombe',
-    location: 'KG 45 Ave, Kanombe, Kigali',
-    price: '$85,000',
-    type: 'For Sale',
-    category: 'Land',
-    beds: 0,
-    baths: 0,
-    sqft: '6,000',
-    realtor: 'Jean-Paul M.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'modern-apartment-kacyiru',
-    title: 'Modern Apartment in Kacyiru',
-    location: 'KG 5 Ave, Kacyiru, Kigali',
-    price: '$185,000',
-    type: 'For Sale',
-    category: 'Apartments',
-    beds: 3,
-    baths: 2,
-    sqft: '1,850',
-    realtor: 'Aline U.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'guest-house-kiyovu',
-    title: 'Charming Guest House in Kiyovu',
-    location: 'KG 3 Ave, Kiyovu, Kigali',
-    price: '$2,800/mo',
-    type: 'For Rent',
-    category: 'Guest House',
-    featured: true,
-    beds: 6,
-    baths: 5,
-    sqft: '3,500',
-    realtor: 'Aline U.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'luxury-villa-nyarutarama',
-    title: 'Luxury Villa in Nyarutarama',
-    location: 'KG 17 Ave, Nyarutarama, Kigali',
-    price: '$320,000',
-    type: 'For Sale',
-    category: 'Villas',
-    featured: true,
-    beds: 5,
-    baths: 4,
-    sqft: '4,200',
-    realtor: 'Jean-Paul M.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'commercial-office-cbd',
-    title: 'Prime Commercial Office, CBD',
-    location: 'KG 7 Ave, Kigali CBD, Kigali',
-    price: '$650,000',
-    type: 'For Sale',
-    category: 'Offices',
-    featured: true,
-    beds: 0,
-    baths: 6,
-    sqft: '5,800',
-    realtor: 'Jean-Paul M.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
-  },
-];
+function PropertiesContent() {
+  const searchParams = useSearchParams();
+  const realtorId = searchParams.get('realtor');
 
-export default function PropertiesPage() {
-  const [filterType, setFilterType] = useState<'All' | 'For Sale' | 'For Rent'>('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState<'All' | 'For Sale' | 'For Rent'>(() => {
+    const type = searchParams.get('type');
+    if (type === 'buy' || type === 'sale') return 'For Sale';
+    if (type === 'rent') return 'For Rent';
+    return 'All';
+  });
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('location') || searchParams.get('q') || '');
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredProperties = PROPERTIES_LIST.filter((p) => {
-    if (filterType === 'For Sale' && p.type !== 'For Sale') return false;
-    if (filterType === 'For Rent' && p.type !== 'For Rent') return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (
-        p.title.toLowerCase().includes(q) ||
-        p.location.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
-      );
+  const [showFilters, setShowFilters] = useState(false);
+  const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [minBeds, setMinBeds] = useState(0);
+  const [minBaths, setMinBaths] = useState(0);
+  const [category, setCategory] = useState(() => searchParams.get('category') || '');
+
+  const activeAdvancedFilterCount = [minPrice, maxPrice, minBeds > 0, minBaths > 0, category].filter(Boolean).length;
+
+  const clearAdvancedFilters = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setMinBeds(0);
+    setMinBaths(0);
+    setCategory('');
+  };
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
     }
-    return true;
-  });
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    async function fetchDatabaseProperties() {
+      setLoading(true);
+      try {
+        const query = realtorId ? `?realtor_id=${encodeURIComponent(realtorId)}` : '';
+        const res = await fetch(`/api/properties${query}`);
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : data.properties || [];
+          setProperties(list);
+        } else {
+          setProperties([]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch properties from database:', err);
+        setProperties([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDatabaseProperties();
+  }, [realtorId]);
+
+  const handleSaveProperty = async (prop: any, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      window.location.href = '/signin';
+      return;
+    }
+
+    try {
+      await fetch('/api/customer/saved-properties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ property_id: prop.id }),
+      });
+      alert('Property saved to your favorites!');
+    } catch (err) {
+      console.error('Failed to save property:', err);
+    }
+  };
+
+  const filteredProperties = properties
+    .filter((p) => {
+      const pType = (p.listing_type || p.type || '').toLowerCase();
+      if (filterType === 'For Sale' && !pType.includes('sale')) return false;
+      if (filterType === 'For Rent' && !pType.includes('rent')) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const title = (p.title || '').toLowerCase();
+        const district = (p.district || p.location || p.address || '').toLowerCase();
+        if (!title.includes(q) && !district.includes(q)) return false;
+      }
+      const price = Number(p.price || 0);
+      if (minPrice && price < Number(minPrice)) return false;
+      if (maxPrice && price > Number(maxPrice)) return false;
+      if (minBeds > 0 && Number(p.bedrooms || 0) < minBeds) return false;
+      if (minBaths > 0 && Number(p.bathrooms || 0) < minBaths) return false;
+      if (category && p.category_id !== category) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-asc') return Number(a.price || 0) - Number(b.price || 0);
+      if (sortBy === 'price-desc') return Number(b.price || 0) - Number(a.price || 0);
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -172,7 +161,7 @@ export default function PropertiesPage() {
                 Property Listings
               </h1>
               <p className="text-white/60 mt-2 text-sm">
-                {filteredProperties.length} properties found
+                {filteredProperties.length} verified database listings found
               </p>
             </div>
             <div className="flex gap-1 bg-white/10 p-1 rounded-xl self-start sm:self-auto">
@@ -216,42 +205,53 @@ export default function PropertiesPage() {
         {/* Search and Filters Bar */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by title, address, or neighborhood…"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
             />
           </div>
-
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors bg-white border-slate-200 text-slate-700 hover:border-slate-300">
-            <SlidersHorizontal className="w-4 h-4" />
-            Filters
-          </button>
 
           <div className="relative">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none pl-3 pr-8 py-2.5 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)] cursor-pointer"
+              className="appearance-none pl-3 pr-8 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)] cursor-pointer"
             >
               <option value="newest">Newest First</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
-              <option value="popular">Most Popular</option>
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
           </div>
 
-          <div className="hidden sm:flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all relative shrink-0 ${
+              showFilters
+                ? 'bg-[var(--navy)] border-[var(--navy)] text-white'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>Filters</span>
+            {activeAdvancedFilterCount > 0 && (
+              <span className="w-5 h-5 bg-[var(--emerald)] text-white text-xs font-bold rounded-full flex items-center justify-center">
+                {activeAdvancedFilterCount}
+              </span>
+            )}
+          </button>
+
+          <div className="hidden sm:flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1 rounded-xl">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-1.5 rounded-lg transition-colors ${
                 viewMode === 'grid'
                   ? 'bg-[var(--navy)] text-white'
-                  : 'text-slate-400 hover:text-slate-600'
+                  : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
               aria-label="Grid view"
             >
@@ -262,7 +262,7 @@ export default function PropertiesPage() {
               className={`p-1.5 rounded-lg transition-colors ${
                 viewMode === 'list'
                   ? 'bg-[var(--navy)] text-white'
-                  : 'text-slate-400 hover:text-slate-600'
+                  : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
               aria-label="List view"
             >
@@ -271,104 +271,224 @@ export default function PropertiesPage() {
           </div>
         </div>
 
-        {/* Properties Grid / List */}
-        <div
-          className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'
-              : 'flex flex-col gap-4'
-          }
-        >
-          {filteredProperties.map((prop, idx) => (
-            <article
-              key={idx}
-              className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-slate-100 group ${
-                viewMode === 'list' ? 'flex flex-col sm:flex-row' : ''
-              }`}
-            >
-              <div
-                className={`relative overflow-hidden bg-slate-100 ${
-                  viewMode === 'list' ? 'sm:w-64 h-52 shrink-0' : 'h-52'
-                }`}
+        {/* Advanced Filters Panel */}
+        {showFilters && (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 mb-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-[var(--navy)] dark:text-white text-sm">Advanced Filters</h3>
+              <button
+                onClick={clearAdvancedFilters}
+                className="text-xs text-[var(--emerald)] font-medium hover:underline"
               >
-                <Image
-                  src={prop.image}
-                  alt={prop.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                Clear Filters
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Min Price (RWF)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  placeholder="No minimum"
+                  className="w-full px-3.5 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
                 />
-                <div className="absolute top-3 left-3 flex items-center gap-2">
-                  <span
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg text-white ${
-                      prop.type === 'For Sale' ? 'bg-[var(--emerald)]' : 'bg-blue-600'
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Max Price (RWF)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  placeholder="No maximum"
+                  className="w-full px-3.5 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Min Bedrooms</label>
+                <select
+                  value={minBeds}
+                  onChange={(e) => setMinBeds(Number(e.target.value))}
+                  className="w-full px-3.5 py-2 text-sm text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                >
+                  <option value={0}>Any</option>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n}+</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Min Bathrooms</label>
+                <select
+                  value={minBaths}
+                  onChange={(e) => setMinBaths(Number(e.target.value))}
+                  className="w-full px-3.5 py-2 text-sm text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                >
+                  <option value={0}>Any</option>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n}+</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="sm:col-span-2 lg:col-span-4">
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Category</label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCategory('')}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      category === ''
+                        ? 'bg-[var(--emerald)] text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
-                    {prop.type}
-                  </span>
-                  {prop.featured && (
-                    <span className="px-2.5 py-1 text-xs font-semibold bg-amber-400 text-white rounded-lg">
-                      Featured
-                    </span>
-                  )}
+                    All Categories
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setCategory(cat.id)}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        category === cat.id
+                          ? 'bg-[var(--emerald)] text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
                 </div>
-                <button
-                  className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow transition-colors"
-                  aria-label="Save to favorites"
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Properties Grid / List */}
+        {loading ? (
+          <div className="py-20 text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--emerald)] mx-auto mb-2" />
+            <p className="text-xs text-slate-500 dark:text-slate-400">Loading database properties...</p>
+          </div>
+        ) : filteredProperties.length === 0 ? (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 text-center border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+            <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+            <h3 className="text-lg font-bold text-[var(--navy)] dark:text-white">No Database Properties Found</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              {searchQuery
+                ? 'No real estate listings match your search criteria.'
+                : 'No property listings have been published in the database yet. Real estate agents can add listings via the Realtor Dashboard.'}
+            </p>
+          </div>
+        ) : (
+          <div
+            className={
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'
+                : 'flex flex-col gap-4'
+            }
+          >
+            {filteredProperties.map((prop, idx) => {
+              const coverImg = prop.images?.[0] || prop.image || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80';
+              const pType = prop.listing_type === 'rent' ? 'For Rent' : 'For Sale';
+              const propId = prop.id || prop.slug || `prop-${idx}`;
+
+              return (
+                <article
+                  key={propId}
+                  className={`bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-slate-100 dark:border-slate-800 group ${
+                    viewMode === 'list' ? 'flex flex-col sm:flex-row' : ''
+                  }`}
                 >
-                  <Heart className="w-4 h-4 text-slate-400 hover:text-red-500 transition-colors" />
-                </button>
-                <div className="absolute bottom-3 left-3">
-                  <span className="px-3 py-1.5 bg-[var(--navy)]/90 text-white text-sm font-bold rounded-lg backdrop-blur-sm">
-                    {prop.price}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-semibold text-[var(--navy)] text-base leading-snug mb-1 line-clamp-1">
-                    {prop.title}
-                  </h3>
-                  <div className="flex items-center gap-1 text-slate-400 mb-3">
-                    <MapPin className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-xs">{prop.location}</span>
-                  </div>
-
-                  <div className="flex items-center gap-4 py-3 border-t border-slate-100 mb-3">
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Bed className="w-4 h-4 text-[var(--emerald)]" />
-                      <span className="text-xs font-medium">{prop.beds} Beds</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Bath className="w-4 h-4 text-[var(--emerald)]" />
-                      <span className="text-xs font-medium">{prop.baths} Baths</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Maximize2 className="w-4 h-4 text-[var(--emerald)]" />
-                      <span className="text-xs font-medium">{prop.sqft} sqft</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-[var(--navy)] overflow-hidden flex items-center justify-center relative">
-                      <Image src={prop.realtorAvatar} alt={prop.realtor} fill className="object-cover" />
-                    </div>
-                    <span className="text-xs text-slate-500">{prop.realtor}</span>
-                  </div>
-                  <Link
-                    href={`/properties/${prop.slug}`}
-                    className="px-3 py-1.5 text-xs font-semibold bg-[var(--navy)] hover:bg-[var(--emerald)] text-white rounded-lg transition-colors"
+                  <div
+                    className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800 ${
+                      viewMode === 'list' ? 'sm:w-64 h-52 shrink-0' : 'h-52'
+                    }`}
                   >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+                    <img
+                      src={coverImg}
+                      alt={prop.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 flex items-center gap-2">
+                      <span
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg text-white ${
+                          pType === 'For Sale' ? 'bg-[var(--emerald)]' : 'bg-blue-600'
+                        }`}
+                      >
+                        {pType}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={(e) => handleSaveProperty(prop, e)}
+                      className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow transition-colors"
+                      aria-label="Save to favorites"
+                    >
+                      <Heart className="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors" />
+                    </button>
+
+                    <div className="absolute bottom-3 left-3">
+                      <span className="px-3 py-1.5 bg-[var(--navy)]/90 text-white text-sm font-bold rounded-lg backdrop-blur-sm">
+                        {prop.currency || 'RWF'} {Number(prop.price || 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-[var(--navy)] dark:text-white text-base leading-snug mb-1 line-clamp-1">
+                        {prop.title}
+                      </h3>
+                      <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500 mb-3">
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs truncate">{prop.district || prop.address || 'Kigali'}</span>
+                      </div>
+
+                      <div className="flex items-center gap-4 py-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                          <Bed className="w-4 h-4 text-[var(--emerald)]" />
+                          <span className="text-xs font-medium">{prop.bedrooms || 0} Beds</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                          <Bath className="w-4 h-4 text-[var(--emerald)]" />
+                          <span className="text-xs font-medium">{prop.bathrooms || 0} Baths</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                          <Maximize2 className="w-4 h-4 text-[var(--emerald)]" />
+                          <span className="text-xs font-medium">{prop.size || prop.area_sqm || 0} m²</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end pt-2">
+                      <Link
+                        href={`/properties/${propId}`}
+                        className="px-4 py-2 text-xs font-semibold bg-[var(--navy)] hover:bg-[var(--emerald)] text-white rounded-xl transition-colors shadow"
+                      >
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background pt-24 text-center text-slate-400 dark:text-slate-500">Loading properties...</div>}>
+      <PropertiesContent />
+    </Suspense>
   );
 }

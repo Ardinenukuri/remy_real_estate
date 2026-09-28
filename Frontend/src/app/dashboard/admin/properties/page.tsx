@@ -265,17 +265,17 @@ export default function AdminPropertiesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 flex text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex text-slate-900 dark:text-slate-100">
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <main className="p-6 max-w-7xl w-full mx-auto space-y-6">
           {/* Header */}
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-white">
+            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">
               Property Management
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
               Review, approve, feature, or remove property listings.
             </p>
           </div>
@@ -288,7 +288,7 @@ export default function AdminPropertiesPage() {
                 className={`rounded-2xl border ${card.bg} p-4 flex flex-col gap-2`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {card.label}
                   </span>
                   <card.icon className={`w-4 h-4 ${card.color}`} />
@@ -303,13 +303,13 @@ export default function AdminPropertiesPage() {
           {/* Search & Filter Controls */}
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search properties by title, city, or district..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
               />
             </div>
 
@@ -324,7 +324,7 @@ export default function AdminPropertiesPage() {
                   className={`px-3.5 py-2 text-xs font-semibold rounded-xl capitalize transition-all whitespace-nowrap ${
                     filter === f
                       ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                      : 'bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                      : 'bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
                   {f}
@@ -335,17 +335,17 @@ export default function AdminPropertiesPage() {
 
           {/* Properties List */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-slate-950 border border-slate-800 rounded-2xl">
+            <div className="flex flex-col items-center justify-center py-20 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl">
               <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
-              <p className="text-xs text-slate-400">Loading property listings...</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Loading property listings...</p>
             </div>
           ) : properties.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-slate-950 border border-slate-800 rounded-2xl text-center">
-              <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 mb-3">
+            <div className="flex flex-col items-center justify-center p-12 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-center">
+              <div className="w-12 h-12 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-500 mb-3">
                 <Building2 className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-white">No Properties Found</h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">No Properties Found</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
                 No listings match your current filter or search criteria.
               </p>
             </div>
@@ -359,10 +359,10 @@ export default function AdminPropertiesPage() {
                   return (
                     <div
                       key={p.id}
-                      className={`bg-slate-950 border rounded-2xl p-5 transition-all ${
+                      className={`bg-slate-100 dark:bg-slate-950 border rounded-2xl p-5 transition-all ${
                         isPending
                           ? 'border-amber-500/30 bg-amber-500/5'
-                          : 'border-slate-800 hover:border-slate-700'
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -374,7 +374,7 @@ export default function AdminPropertiesPage() {
 
                           <div className="min-w-0 space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="font-bold text-sm text-white truncate">
+                              <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
                                 {p.title || 'Untitled Property'}
                               </h3>
 
@@ -397,23 +397,23 @@ export default function AdminPropertiesPage() {
                               )}
                             </div>
 
-                            <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
+                            <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
                               {p.district && (
                                 <span className="flex items-center gap-1">
-                                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                                  <MapPin className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                                   {p.district}
                                 </span>
                               )}
                               <span className="font-semibold text-emerald-400">
                                 {formatPriceShort(p.price)}
                               </span>
-                              <span className="flex items-center gap-1 text-slate-400">
-                                <User className="w-3.5 h-3.5 text-slate-500" />
+                              <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                                <User className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                                 {realtor?.full_name || 'Unknown Realtor'}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-4 text-xs text-slate-500 mt-1">
+                            <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-500 mt-1">
                               <span className="flex items-center gap-1">
                                 <Eye className="w-3.5 h-3.5" />
                                 {p.views ?? 0} views
@@ -438,14 +438,14 @@ export default function AdminPropertiesPage() {
                         </div>
 
                         {/* Right: Actions */}
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-slate-800/80 pt-3 sm:pt-0">
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-slate-200 dark:border-slate-800/80 pt-3 sm:pt-0">
                           {/* Approval Toggle Button */}
                           <button
                             disabled={actionId === p.id}
                             onClick={() => toggleApproval(p.id, Boolean(p.is_approved))}
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
                               p.is_approved
-                                ? 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                ? 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
                                 : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                             }`}
                           >
@@ -471,7 +471,7 @@ export default function AdminPropertiesPage() {
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
                               p.is_featured
                                 ? 'bg-amber-500/10 text-amber-300 border-amber-500/20 hover:bg-amber-500/20'
-                                : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
                             }`}
                           >
                             <Star className={`w-3.5 h-3.5 ${p.is_featured ? 'fill-amber-300' : ''}`} />
@@ -482,7 +482,7 @@ export default function AdminPropertiesPage() {
                           <button
                             disabled={actionId === p.id}
                             onClick={() => deleteProperty(p.id)}
-                            className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
+                            className="p-1.5 text-slate-600 dark:text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
                             title="Delete Property"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -496,17 +496,17 @@ export default function AdminPropertiesPage() {
 
               {/* Pagination */}
               {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3">
-                  <p className="text-xs text-slate-400">
+                <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Showing{' '}
-                    <span className="text-slate-200 font-semibold">
+                    <span className="text-slate-700 dark:text-slate-200 font-semibold">
                       {(pagination.page - 1) * pagination.limit + 1}
                     </span>{' '}
                     -{' '}
-                    <span className="text-slate-200 font-semibold">
+                    <span className="text-slate-700 dark:text-slate-200 font-semibold">
                       {Math.min(pagination.page * pagination.limit, pagination.total)}
                     </span>{' '}
-                    of <span className="text-slate-200 font-semibold">{pagination.total}</span>{' '}
+                    of <span className="text-slate-700 dark:text-slate-200 font-semibold">{pagination.total}</span>{' '}
                     properties
                   </p>
 
@@ -514,7 +514,7 @@ export default function AdminPropertiesPage() {
                     <button
                       onClick={() => goToPage(pagination.page - 1)}
                       disabled={pagination.page <= 1}
-                      className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -538,7 +538,7 @@ export default function AdminPropertiesPage() {
                               className={`w-8 h-8 text-xs font-semibold rounded-lg transition-all ${
                                 pagination.page === page
                                   ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                               }`}
                             >
                               {page}
@@ -550,7 +550,7 @@ export default function AdminPropertiesPage() {
                     <button
                       onClick={() => goToPage(pagination.page + 1)}
                       disabled={pagination.page >= pagination.totalPages}
-                      className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>

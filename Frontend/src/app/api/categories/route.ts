@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Never cache this route - always proxy through to the backend for live data.
+export const dynamic = 'force-dynamic';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export async function GET(request: NextRequest) {
   try {
-    const backendResponse = await fetch(`${API_BASE_URL}/categories`, {
+    const authHeader = request.headers.get('authorization');
+    const backendHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (authHeader) backendHeaders.Authorization = authHeader;
+
+    const backendResponse = await fetch(`${API_BASE_URL}/realtor/categories`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: backendHeaders,
     });
 
     const data = await backendResponse.json().catch(() => null);
@@ -24,13 +30,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authHeader = request.headers.get('authorization');
     const body = await request.json();
 
-    const backendResponse = await fetch(`${API_BASE_URL}/categories`, {
+    const backendHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (authHeader) backendHeaders.Authorization = authHeader;
+
+    const backendResponse = await fetch(`${API_BASE_URL}/realtor/categories`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: backendHeaders,
       body: JSON.stringify(body),
     });
 

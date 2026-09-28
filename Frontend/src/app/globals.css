@@ -5,17 +5,40 @@
 @tailwind utilities;
 
 :root {
+  /* Fixed brand colors - identical in both themes, like a logo color */
   --navy: #0f172a;
   --emerald: #00884C;
   --background: #f8fafc;
+
+  /* Theme-aware semantic tokens - light mode values */
+  --surface: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-muted: #f1f5f9;
+  --text-heading: #0f172a;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --border-subtle: #e2e8f0;
+  color-scheme: light;
+}
+
+.dark {
+  --surface: #0b1220;
+  --surface-card: #0f172a;
+  --surface-muted: #1e293b;
+  --text-heading: #f8fafc;
+  --text-body: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-subtle: #1e293b;
+  color-scheme: dark;
 }
 
 @layer base {
   body {
-    background-color: var(--background);
-    color: #1e293b;
+    background-color: var(--surface);
+    color: var(--text-body);
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   h1, h2, h3, .font-heading {

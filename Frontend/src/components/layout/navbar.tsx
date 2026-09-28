@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Home as HouseIcon, Menu, X } from 'lucide-react';
+import { ThemeToggle } from '../theme-toggle';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -33,16 +34,10 @@ export const Navbar = () => {
               Home
             </Link>
             <Link
-              href="/properties?type=buy"
+              href="/properties"
               className="px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors"
             >
-              Buy
-            </Link>
-            <Link
-              href="/properties?type=rent"
-              className="px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors"
-            >
-              Rent
+              Properties
             </Link>
             <Link
               href="/realtors"
@@ -63,6 +58,12 @@ export const Navbar = () => {
               About Us
             </Link>
             <Link
+              href="/faq"
+              className="px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+            >
+              FAQ
+            </Link>
+            <Link
               href="/contact"
               className="px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors"
             >
@@ -72,6 +73,7 @@ export const Navbar = () => {
 
           {/* Action Buttons */}
           <div className="hidden lg:flex items-center gap-3">
+            <ThemeToggle className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors" />
             <Link
               href="/signin"
               className="px-4 py-2 text-sm font-medium text-white border border-white/30 rounded-lg hover:border-white/60 hover:bg-white/5 transition-colors"
@@ -86,14 +88,17 @@ export const Navbar = () => {
             </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-white/80 hover:text-white focus:outline-none"
-            aria-label="Open menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile: theme toggle + menu button */}
+          <div className="lg:hidden flex items-center gap-1">
+            <ThemeToggle className="p-2 text-white/80 hover:text-white focus:outline-none" />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-white/80 hover:text-white focus:outline-none"
+              aria-label="Open menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -108,18 +113,11 @@ export const Navbar = () => {
             Home
           </Link>
           <Link
-            href="/properties?type=buy"
+            href="/properties"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 text-base text-white/90 hover:bg-white/10 rounded-md"
           >
-            Buy
-          </Link>
-          <Link
-            href="/properties?type=rent"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 text-base text-white/90 hover:bg-white/10 rounded-md"
-          >
-            Rent
+            Properties
           </Link>
           <Link
             href="/realtors"
@@ -141,6 +139,13 @@ export const Navbar = () => {
             className="block px-3 py-2 text-base text-white/90 hover:bg-white/10 rounded-md"
           >
             About Us
+          </Link>
+          <Link
+            href="/faq"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 text-base text-white/90 hover:bg-white/10 rounded-md"
+          >
+            FAQ
           </Link>
           <Link
             href="/contact"

@@ -15,10 +15,13 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
     pathname?.startsWith('/reset-password') ||
     pathname?.startsWith('/verify-email');
 
-  // Hide Navbar & Footer on /dashboard, /realtor, and /customer routes
+  // Hide Navbar & Footer on /dashboard, /realtor (the realtor dashboard), and
+  // /customer routes - but NOT on /realtors, the public "Meet Our Realtors"
+  // marketing page, which merely shares the same prefix.
   const isDashboardPage =
     pathname?.startsWith('/dashboard') ||
-    pathname?.startsWith('/realtor') ||
+    pathname === '/realtor' ||
+    pathname?.startsWith('/realtor/') ||
     pathname?.startsWith('/customer');
 
   const hideHeaderFooter = isAuthPage || isDashboardPage;

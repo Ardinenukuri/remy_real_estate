@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
         },
         body: JSON.stringify({
           token,
-          password,
+          newPassword: password,
         }),
       });
 
@@ -106,7 +106,7 @@ export default function ResetPasswordPage() {
 
               <div className="pt-2">
                 <Link
-                  href="/login"
+                  href="/signin"
                   className="w-full py-3 bg-[var(--emerald)] hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition-colors shadow"
                 >
                   Go to Sign In <ArrowRight className="w-4 h-4" />

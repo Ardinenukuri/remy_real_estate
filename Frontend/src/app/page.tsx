@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -18,133 +18,87 @@ import {
   TrendingUp,
   Award,
   Quote,
+  Building2,
+  Loader2,
 } from 'lucide-react';
 
-const FEATURED_PROPERTIES = [
-  {
-    slug: 'luxury-villa-nyarutarama',
-    title: 'Luxury Villa in Nyarutarama',
-    location: 'KG 17 Ave, Nyarutarama, Kigali',
-    price: '$320,000',
-    type: 'For Sale',
-    category: 'Villas',
-    featured: true,
-    beds: 5,
-    baths: 4,
-    sqft: '4,200',
-    realtor: 'Jean-Paul M.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'modern-apartment-kacyiru',
-    title: 'Modern Apartment in Kacyiru',
-    location: 'KG 5 Ave, Kacyiru, Kigali',
-    price: '$185,000',
-    type: 'For Sale',
-    category: 'Apartments',
-    featured: false,
-    beds: 3,
-    baths: 2,
-    sqft: '1,850',
-    realtor: 'Aline U.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'executive-penthouse-kimihurura',
-    title: 'Executive Penthouse in Kimihurura',
-    location: 'KG 11 Ave, Kimihurura, Kigali',
-    price: '$4,500/mo',
-    type: 'For Rent',
-    category: 'Penthouses',
-    featured: true,
-    beds: 4,
-    baths: 3,
-    sqft: '3,100',
-    realtor: 'Patrick N.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'commercial-office-cbd',
-    title: 'Prime Commercial Office, CBD',
-    location: 'KG 7 Ave, Kigali CBD, Kigali',
-    price: '$650,000',
-    type: 'For Sale',
-    category: 'Offices',
-    featured: true,
-    beds: 0,
-    baths: 6,
-    sqft: '5,800',
-    realtor: 'Jean-Paul M.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'family-home-gacuriro',
-    title: 'Family Home with Pool, Gacuriro',
-    location: 'KG 23 Ave, Gacuriro, Kigali',
-    price: '$220,000',
-    type: 'For Sale',
-    category: 'Houses',
-    featured: false,
-    beds: 4,
-    baths: 3,
-    sqft: '2,800',
-    realtor: 'Aline U.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    slug: 'cozy-apartment-remera',
-    title: 'Cozy 2BR Apartment in Remera',
-    location: 'KG 9 Ave, Remera, Kigali',
-    price: '$1,200/mo',
-    type: 'For Rent',
-    category: 'Apartments',
-    featured: false,
-    beds: 2,
-    baths: 1,
-    sqft: '950',
-    realtor: 'Patrick N.',
-    realtorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
-  },
-];
+interface HomeProperty {
+  id: string;
+  title: string;
+  district: string;
+  address: string;
+  price: number;
+  currency: string;
+  listing_type: string;
+  bedrooms: number;
+  bathrooms: number;
+  area_sqm: number;
+  images: string[];
+  is_featured: boolean;
+  realtor: { id: string; name: string; avatar_url: string } | null;
+}
 
-const TESTIMONIALS = [
-  {
-    name: 'David & Mary K.',
-    role: 'Homeowners in Nyarutarama',
-    initials: 'DM',
-    comment:
-      'Finding our dream villa in Kigali was effortless through Remy Real Estates. Direct contact with Jean-Paul made the title verification and buying process 100% transparent.',
-    rating: 5,
-  },
-  {
-    name: 'Sarah L.',
-    role: 'Expat Tenant in Kimihurura',
-    initials: 'SL',
-    comment:
-      'As an expat moving to Rwanda, Patrick helped me secure a high-security penthouse within 48 hours of arriving in Kigali. Highly recommended!',
-    rating: 5,
-  },
-  {
-    name: 'Emmanuel R.',
-    role: 'Commercial Investor',
-    initials: 'ER',
-    comment:
-      'The platform provided verified office listings in Kigali CBD with accurate square footage and pricing history. We closed our transaction smoothly.',
-    rating: 5,
-  },
-];
+interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  content: string;
+  rating: number;
+}
+
+const getInitials = (name: string) =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'buy' | 'rent'>('buy');
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('apartments');
   const [priceRange, setPriceRange] = useState('any');
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [properties, setProperties] = useState<HomeProperty[]>([]);
+  const [propertiesLoading, setPropertiesLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProperties() {
+      setPropertiesLoading(true);
+      try {
+        const res = await fetch('/api/properties');
+        if (res.ok) {
+          const data = await res.json();
+          const list: HomeProperty[] = Array.isArray(data) ? data : data.properties || [];
+          const featured = list.filter((p) => p.is_featured);
+          setProperties((featured.length > 0 ? featured : list).slice(0, 6));
+        }
+      } catch (err) {
+        console.error('Failed to load properties:', err);
+      } finally {
+        setPropertiesLoading(false);
+      }
+    }
+
+    fetchProperties();
+  }, []);
+
+  useEffect(() => {
+    async function fetchTestimonials() {
+      try {
+        const res = await fetch('/api/testimonials');
+        if (res.ok) {
+          const data = await res.json();
+          setTestimonials(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error('Failed to load testimonials:', err);
+      }
+    }
+
+    fetchTestimonials();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -198,14 +152,14 @@ export default function HomePage() {
           </p>
 
           {/* Search Card */}
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-3xl mx-auto text-left">
-            <div className="flex border-b border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden max-w-3xl mx-auto text-left">
+            <div className="flex border-b border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setActiveTab('buy')}
                 className={`flex-1 py-3.5 text-sm font-semibold uppercase tracking-wide transition-colors ${
                   activeTab === 'buy'
                     ? 'bg-[var(--navy)] text-white'
-                    : 'text-slate-500 hover:text-[var(--navy)] hover:bg-slate-50'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-[var(--navy)] dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900'
                 }`}
               >
                 Buy
@@ -215,7 +169,7 @@ export default function HomePage() {
                 className={`flex-1 py-3.5 text-sm font-semibold uppercase tracking-wide transition-colors ${
                   activeTab === 'rent'
                     ? 'bg-[var(--navy)] text-white'
-                    : 'text-slate-500 hover:text-[var(--navy)] hover:bg-slate-50'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-[var(--navy)] dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900'
                 }`}
               >
                 Rent
@@ -225,22 +179,22 @@ export default function HomePage() {
             <div className="p-4 sm:p-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-200" />
                   <input
                     type="text"
                     placeholder="Location (e.g. Nyarutarama)"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full pl-9 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                    className="w-full pl-9 pr-4 py-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
                   />
                 </div>
 
                 <div className="relative">
-                  <HouseIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <HouseIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-200" />
                   <select
                     value={propertyType}
                     onChange={(e) => setPropertyType(e.target.value)}
-                    className="w-full pl-9 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)] appearance-none cursor-pointer"
+                    className="w-full pl-9 pr-4 py-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-100 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)] appearance-none cursor-pointer"
                   >
                     <option value="apartments">Apartments</option>
                     <option value="villas">Villas</option>
@@ -250,11 +204,11 @@ export default function HomePage() {
                 </div>
 
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-200 text-sm font-medium">$</span>
                   <select
                     value={priceRange}
                     onChange={(e) => setPriceRange(e.target.value)}
-                    className="w-full pl-7 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)] appearance-none cursor-pointer"
+                    className="w-full pl-7 pr-4 py-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-100 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)] appearance-none cursor-pointer"
                   >
                     <option value="any">Any Price</option>
                     <option value="0-50000">Under $50K</option>
@@ -317,7 +271,7 @@ export default function HomePage() {
               <span className="inline-flex items-center px-3 py-1 bg-[var(--emerald)]/10 text-[var(--emerald)] text-xs font-semibold rounded-full uppercase tracking-wider mb-3">
                 Featured Listings
               </span>
-              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[var(--navy)] text-balance">
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[var(--navy)] dark:text-white text-balance">
                 Handpicked Properties
                 <br />
                 <span className="text-[var(--emerald)]">Just for You</span>
@@ -325,94 +279,119 @@ export default function HomePage() {
             </div>
             <Link
               href="/properties"
-              className="flex items-center gap-2 px-5 py-2.5 border-2 border-[var(--navy)] text-[var(--navy)] hover:bg-[var(--navy)] hover:text-white rounded-xl text-sm font-semibold transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 border-2 border-[var(--navy)] dark:border-white text-[var(--navy)] dark:text-white hover:bg-[var(--navy)] hover:text-white rounded-xl text-sm font-semibold transition-colors"
             >
               View All Listings <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURED_PROPERTIES.map((prop) => (
-              <article
-                key={prop.slug}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-slate-100 group"
-              >
-                <div className="relative h-52 overflow-hidden bg-slate-100">
-                  <Image
-                    src={prop.image}
-                    alt={prop.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 flex items-center gap-2">
-                    <span
-                      className={`px-2.5 py-1 text-xs font-semibold rounded-lg text-white ${
-                        prop.type === 'For Sale' ? 'bg-[var(--emerald)]' : 'bg-blue-600'
-                      }`}
-                    >
-                      {prop.type}
-                    </span>
-                    {prop.featured && (
-                      <span className="px-2.5 py-1 text-xs font-semibold bg-amber-400 text-white rounded-lg">
-                        Featured
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow transition-colors"
-                    aria-label="Save to favorites"
-                  >
-                    <Heart className="w-4 h-4 text-slate-400 hover:text-red-500 transition-colors" />
-                  </button>
-                  <div className="absolute bottom-3 left-3">
-                    <span className="px-3 py-1.5 bg-[var(--navy)]/90 text-white text-sm font-bold rounded-lg backdrop-blur-sm">
-                      {prop.price}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="font-semibold text-[var(--navy)] text-base leading-snug mb-1 line-clamp-1">
-                    {prop.title}
-                  </h3>
-                  <div className="flex items-center gap-1 text-slate-400 mb-3">
-                    <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-                    <span className="text-xs">{prop.location}</span>
-                  </div>
-
-                  <div className="flex items-center gap-4 py-3 border-t border-slate-100 mb-3">
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Bed className="w-4 h-4 text-[var(--emerald)]" />
-                      <span className="text-xs font-medium">{prop.beds} Beds</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Bath className="w-4 h-4 text-[var(--emerald)]" />
-                      <span className="text-xs font-medium">{prop.baths} Baths</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Maximize2 className="w-4 h-4 text-[var(--emerald)]" />
-                      <span className="text-xs font-medium">{prop.sqft} sqft</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[var(--navy)] overflow-hidden flex items-center justify-center relative">
-                        <Image src={prop.realtorAvatar} alt={prop.realtor} fill className="object-cover" />
+          {propertiesLoading ? (
+            <div className="py-16 text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-[var(--emerald)] mx-auto mb-3" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loading listings...</p>
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="py-16 text-center">
+              <Building2 className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-500 dark:text-slate-400 text-sm">No listings published yet. Check back soon.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties.map((prop) => (
+                <article
+                  key={prop.id}
+                  className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-slate-100 dark:border-slate-800 group"
+                >
+                  <div className="relative h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    {prop.images?.[0] ? (
+                      <Image
+                        src={prop.images[0]}
+                        alt={prop.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
+                        <Building2 className="w-10 h-10" />
                       </div>
-                      <span className="text-xs text-slate-500">{prop.realtor}</span>
+                    )}
+                    <div className="absolute top-3 left-3 flex items-center gap-2">
+                      <span
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg text-white ${
+                          prop.listing_type === 'rent' ? 'bg-blue-600' : 'bg-[var(--emerald)]'
+                        }`}
+                      >
+                        {prop.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
+                      </span>
+                      {prop.is_featured && (
+                        <span className="px-2.5 py-1 text-xs font-semibold bg-amber-400 text-white rounded-lg">
+                          Featured
+                        </span>
+                      )}
                     </div>
-                    <Link
-                      href={`/properties/${prop.slug}`}
-                      className="px-3 py-1.5 text-xs font-semibold bg-[var(--navy)] hover:bg-[var(--emerald)] text-white rounded-lg transition-colors"
+                    <button
+                      className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow transition-colors"
+                      aria-label="Save to favorites"
                     >
-                      View Details
-                    </Link>
+                      <Heart className="w-4 h-4 text-slate-400 dark:text-slate-200 hover:text-red-500 transition-colors" />
+                    </button>
+                    <div className="absolute bottom-3 left-3">
+                      <span className="px-3 py-1.5 bg-[var(--navy)]/90 text-white text-sm font-bold rounded-lg backdrop-blur-sm">
+                        {prop.currency} {prop.price.toLocaleString()}
+                        {prop.listing_type === 'rent' && '/mo'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
-          </div>
+
+                  <div className="p-4">
+                    <h3 className="font-semibold text-[var(--navy)] dark:text-white text-base leading-snug mb-1 line-clamp-1">
+                      {prop.title}
+                    </h3>
+                    <div className="flex items-center gap-1 text-slate-400 dark:text-slate-200 mb-3">
+                      <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-200" />
+                      <span className="text-xs">{prop.district || prop.address}</span>
+                    </div>
+
+                    <div className="flex items-center gap-4 py-3 border-t border-slate-100 dark:border-slate-800 mb-3">
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                        <Bed className="w-4 h-4 text-[var(--emerald)]" />
+                        <span className="text-xs font-medium">{prop.bedrooms} Beds</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                        <Bath className="w-4 h-4 text-[var(--emerald)]" />
+                        <span className="text-xs font-medium">{prop.bathrooms} Baths</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                        <Maximize2 className="w-4 h-4 text-[var(--emerald)]" />
+                        <span className="text-xs font-medium">{prop.area_sqm} sqft</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-[var(--navy)] overflow-hidden flex items-center justify-center relative shrink-0">
+                          {prop.realtor?.avatar_url ? (
+                            <Image src={prop.realtor.avatar_url} alt={prop.realtor.name} fill className="object-cover" />
+                          ) : (
+                            <span className="text-[10px] font-bold text-white">
+                              {(prop.realtor?.name || 'R').charAt(0)}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{prop.realtor?.name || 'Remy Real Estates'}</span>
+                      </div>
+                      <Link
+                        href={`/properties/${prop.id}`}
+                        className="px-3 py-1.5 text-xs font-semibold bg-[var(--navy)] hover:bg-[var(--emerald)] text-white rounded-lg transition-colors"
+                      >
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -498,38 +477,40 @@ export default function HomePage() {
       </section>
 
       {/* TESTIMONIALS SECTION */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <span className="inline-flex items-center px-3 py-1 bg-[var(--emerald)]/10 text-[var(--emerald)] text-xs font-semibold rounded-full uppercase tracking-wider mb-4">
-              Client Stories
-            </span>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[var(--navy)] text-balance">
-              What Our Clients Say
-            </h2>
-          </div>
+      {testimonials.length > 0 && (
+        <section className="py-20 bg-slate-50 dark:bg-slate-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-xl mx-auto mb-12">
+              <span className="inline-flex items-center px-3 py-1 bg-[var(--emerald)]/10 text-[var(--emerald)] text-xs font-semibold rounded-full uppercase tracking-wider mb-4">
+                Client Stories
+              </span>
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[var(--navy)] dark:text-white text-balance">
+                What Our Clients Say
+              </h2>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-full bg-[var(--emerald)] flex items-center justify-center text-white font-bold text-sm">
-                    {t.initials}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {testimonials.map((t) => (
+                <div key={t.id} className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 rounded-full bg-[var(--emerald)] flex items-center justify-center text-white font-bold text-sm">
+                      {getInitials(t.name)}
+                    </div>
+                    <Quote className="w-8 h-8 text-[var(--emerald)]/20" />
                   </div>
-                  <Quote className="w-8 h-8 text-[var(--emerald)]/20" />
+                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6 italic">
+                    "{t.content}"
+                  </p>
+                  <div>
+                    <h4 className="font-semibold text-[var(--navy)] dark:text-white text-sm">{t.name}</h4>
+                    <p className="text-xs text-slate-400 dark:text-slate-200">{t.role}</p>
+                  </div>
                 </div>
-                <p className="text-slate-600 text-sm leading-relaxed mb-6 italic">
-                  "{t.comment}"
-                </p>
-                <div>
-                  <h4 className="font-semibold text-[var(--navy)] text-sm">{t.name}</h4>
-                  <p className="text-xs text-slate-400">{t.role}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

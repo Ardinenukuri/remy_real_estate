@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, FormEvent } from 'react';
 import {
   FileText,
   HelpCircle,
@@ -15,9 +15,11 @@ import {
   Clock,
   User,
   Image as ImageIcon,
+  Tag,
 } from 'lucide-react';
 import { timeAgo, cn } from '@/lib/utils';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { ImageUploader } from '@/components/ImageUploader';
 
 const formatDate = (value: string) => {
   const date = new Date(value);
@@ -33,7 +35,7 @@ const formatDate = (value: string) => {
   });
 };
 
-type Tab = 'blog' | 'faqs' | 'testimonials' | 'messages';
+type Tab = 'blog' | 'faqs' | 'testimonials' | 'messages' | 'categories';
 
 interface BlogPost {
   id: string;
@@ -41,6 +43,7 @@ interface BlogPost {
   excerpt: string;
   content: string;
   cover_image: string;
+  category: string;
   author: string;
   published: boolean;
   created_at: string;
@@ -74,6 +77,12 @@ interface ContactMessage {
   created_at: string;
 }
 
+interface PropertyCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const slugify = (value: string) =>
   value
     .toLowerCase()
@@ -88,12 +97,15 @@ export default function AdminContentPage() {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [categories, setCategories] = useState<PropertyCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
   const [showFaqForm, setShowFaqForm] = useState(false);
   const [showBlogForm, setShowBlogForm] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categoryError, setCategoryError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // Helper for REST API headers
@@ -109,17 +121,19 @@ export default function AdminContentPage() {
   const loadAllContent = useCallback(async () => {
     setLoading(true);
     try {
-      const [blogsRes, faqsRes, testRes, msgsRes] = await Promise.all([
+      const [blogsRes, faqsRes, testRes, msgsRes, catsRes] = await Promise.all([
         fetch('/api/admin/blogs', { headers: getAuthHeaders() }),
         fetch('/api/admin/faqs', { headers: getAuthHeaders() }),
         fetch('/api/admin/testimonials', { headers: getAuthHeaders() }),
         fetch('/api/admin/messages', { headers: getAuthHeaders() }),
+        fetch('/api/admin/categories', { headers: getAuthHeaders() }),
       ]);
 
       if (blogsRes.ok) setBlogPosts(await blogsRes.json());
       if (faqsRes.ok) setFaqs(await faqsRes.json());
       if (testRes.ok) setTestimonials(await testRes.json());
       if (msgsRes.ok) setMessages(await msgsRes.json());
+      if (catsRes.ok) setCategories(await catsRes.json());
     } catch (err) {
       console.error('Failed to load content:', err);
     } finally {
@@ -136,8 +150,58 @@ export default function AdminContentPage() {
     { key: 'blog', label: 'Blog Posts', icon: FileText, count: blogPosts.length },
     { key: 'faqs', label: 'FAQs', icon: HelpCircle, count: faqs.length },
     { key: 'testimonials', label: 'Testimonials', icon: Star, count: testimonials.length },
-    { key: 'messages', label: 'Messages', icon: Mail, count: messages.length },
+    { key: 'messages', label: 'Contact Requests', icon: Mail, count: messages.length },
+    { key: 'categories', label: 'Categories', icon: Tag, count: categories.length },
   ];
+
+  // --- CATEGORY HANDLERS ---
+  const handleCreateCategory = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+
+    setSubmitting(true);
+    setCategoryError('');
+    try {
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name: newCategoryName.trim() }),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setCategories((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+        setNewCategoryName('');
+      } else {
+        const data = await res.json().catch(() => null);
+        setCategoryError(data?.message || 'Failed to create category.');
+      }
+    } catch (err) {
+      console.error('Error creating category:', err);
+      setCategoryError('Failed to create category.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    if (!confirm('Delete this category?')) return;
+    setCategoryError('');
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        setCategories((prev) => prev.filter((c) => c.id !== id));
+      } else {
+        const data = await res.json().catch(() => null);
+        setCategoryError(data?.message || 'Failed to delete category.');
+      }
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      setCategoryError('Failed to delete category.');
+    }
+  };
 
   // --- BLOG HANDLERS ---
   const handleSaveBlog = async (data: {
@@ -145,6 +209,7 @@ export default function AdminContentPage() {
     excerpt: string;
     content: string;
     cover_image: string;
+    category: string;
     author: string;
     published: boolean;
   }) => {
@@ -285,23 +350,23 @@ export default function AdminContentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex text-slate-900 dark:text-slate-100">
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <main className="p-6 max-w-7xl w-full mx-auto space-y-6">
           {/* Header */}
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-white">
+            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">
               Content Management
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
               Manage blog posts, FAQs, testimonials, and user contact messages.
             </p>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex gap-2 flex-wrap border-b border-slate-800 pb-4">
+          <div className="flex gap-2 flex-wrap border-b border-slate-200 dark:border-slate-800 pb-4">
             {tabs.map((t) => {
               const Icon = t.icon;
               const isActive = tab === t.key;
@@ -313,7 +378,7 @@ export default function AdminContentPage() {
                     'flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-xl transition-all',
                     isActive
                       ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                      : 'bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                      : 'bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:hover:text-slate-200'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -321,7 +386,7 @@ export default function AdminContentPage() {
                   <span
                     className={cn(
                       'text-[10px] px-2 py-0.5 rounded-full font-bold',
-                      isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
+                      isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                     )}
                   >
                     {t.count}
@@ -333,9 +398,9 @@ export default function AdminContentPage() {
 
           {/* Loading Indicator */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-slate-950 border border-slate-800 rounded-2xl">
+            <div className="flex flex-col items-center justify-center py-20 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl">
               <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
-              <p className="text-xs text-slate-400">Loading content data...</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Loading content data...</p>
             </div>
           ) : (
             <>
@@ -364,7 +429,7 @@ export default function AdminContentPage() {
                   )}
 
                   {blogPosts.length === 0 ? (
-                    <div className="p-12 text-center bg-slate-950 border border-slate-800 rounded-2xl text-slate-500">
+                    <div className="p-12 text-center bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-500">
                       <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       <p className="text-xs">No blog posts found.</p>
                     </div>
@@ -373,39 +438,39 @@ export default function AdminContentPage() {
                       {blogPosts.map((post) => (
                         <div
                           key={post.id}
-                          className="bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all"
+                          className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all"
                         >
                           <div className="flex items-center gap-4 min-w-0">
                             {post.cover_image ? (
                               <img
                                 src={post.cover_image}
                                 alt=""
-                                className="w-14 h-14 rounded-xl object-cover border border-slate-800 shrink-0"
+                                className="w-14 h-14 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shrink-0"
                               />
                             ) : (
-                              <div className="w-14 h-14 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 shrink-0">
+                              <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 shrink-0">
                                 <ImageIcon className="w-6 h-6" />
                               </div>
                             )}
                             <div className="min-w-0 space-y-1">
-                              <h3 className="font-bold text-sm text-white truncate">
+                              <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
                                 {post.title}
                               </h3>
-                              <div className="flex items-center gap-3 text-xs text-slate-400">
+                              <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                                 <span className="flex items-center gap-1">
-                                  <Clock className="w-3.5 h-3.5 text-slate-500" />
+                                  <Clock className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                                   {formatDate(post.created_at)}
                                 </span>
                                 <span>·</span>
                                 <span className="flex items-center gap-1">
-                                  <User className="w-3.5 h-3.5 text-slate-500" />
+                                  <User className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                                   {post.author}
                                 </span>
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 border-slate-800/80 pt-3 sm:pt-0">
+                          <div className="flex items-center gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 border-slate-200 dark:border-slate-800/80 pt-3 sm:pt-0">
                             <span
                               className={`text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider ${
                                 post.published
@@ -420,14 +485,14 @@ export default function AdminContentPage() {
                                 setEditingBlog(post);
                                 setShowBlogForm(true);
                               }}
-                              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg transition-all"
+                              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900 rounded-lg transition-all"
                               title="Edit Post"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => deleteBlog(post.id)}
-                              className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+                              className="p-1.5 text-slate-600 dark:text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                               title="Delete Post"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -465,7 +530,7 @@ export default function AdminContentPage() {
                   )}
 
                   {faqs.length === 0 ? (
-                    <div className="p-12 text-center bg-slate-950 border border-slate-800 rounded-2xl text-slate-500">
+                    <div className="p-12 text-center bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-500">
                       <HelpCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       <p className="text-xs">No FAQs created yet.</p>
                     </div>
@@ -474,14 +539,14 @@ export default function AdminContentPage() {
                       {faqs.map((faq) => (
                         <div
                           key={faq.id}
-                          className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex items-start justify-between gap-4"
+                          className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-start justify-between gap-4"
                         >
                           <div className="space-y-2 flex-1">
                             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               {faq.category || 'General'}
                             </span>
-                            <h3 className="font-bold text-sm text-white">{faq.question}</h3>
-                            <p className="text-xs text-slate-400 leading-relaxed">
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-white">{faq.question}</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                               {faq.answer}
                             </p>
                           </div>
@@ -491,14 +556,14 @@ export default function AdminContentPage() {
                                 setEditingFaq(faq);
                                 setShowFaqForm(true);
                               }}
-                              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg transition-all"
+                              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900 rounded-lg transition-all"
                               title="Edit FAQ"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => deleteFaq(faq.id)}
-                              className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+                              className="p-1.5 text-slate-600 dark:text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                               title="Delete FAQ"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -515,7 +580,7 @@ export default function AdminContentPage() {
               {tab === 'testimonials' && (
                 <div className="space-y-3">
                   {testimonials.length === 0 ? (
-                    <div className="p-12 text-center bg-slate-950 border border-slate-800 rounded-2xl text-slate-500">
+                    <div className="p-12 text-center bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-500">
                       <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       <p className="text-xs">No testimonials submitted yet.</p>
                     </div>
@@ -523,12 +588,12 @@ export default function AdminContentPage() {
                     testimonials.map((t) => (
                       <div
                         key={t.id}
-                        className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3"
+                        className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h3 className="font-bold text-sm text-white">{t.name}</h3>
-                            <p className="text-xs text-slate-400">
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-white">{t.name}</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {t.role} · {timeAgo(t.created_at)}
                             </p>
                           </div>
@@ -543,7 +608,7 @@ export default function AdminContentPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-300 italic bg-slate-900/60 border border-slate-800/80 p-3 rounded-xl">
+                        <p className="text-xs text-slate-600 dark:text-slate-300 italic bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 p-3 rounded-xl">
                           "{t.content}"
                         </p>
 
@@ -566,7 +631,7 @@ export default function AdminContentPage() {
                             className={cn(
                               'text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all',
                               t.is_approved
-                                ? 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                ? 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
                                 : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                             )}
                           >
@@ -583,7 +648,7 @@ export default function AdminContentPage() {
               {tab === 'messages' && (
                 <div className="space-y-3">
                   {messages.length === 0 ? (
-                    <div className="p-12 text-center bg-slate-950 border border-slate-800 rounded-2xl text-slate-500">
+                    <div className="p-12 text-center bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-500">
                       <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       <p className="text-xs">No contact messages received yet.</p>
                     </div>
@@ -591,12 +656,12 @@ export default function AdminContentPage() {
                     messages.map((m) => (
                       <div
                         key={m.id}
-                        className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3"
+                        className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h3 className="font-bold text-sm text-white">{m.name}</h3>
-                            <p className="text-xs text-slate-400">
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-white">{m.name}</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {m.email} · {timeAgo(m.created_at)}
                             </p>
                             {m.subject && (
@@ -609,7 +674,7 @@ export default function AdminContentPage() {
                             className={cn(
                               'text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider',
                               m.status === 'new' && 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-                              m.status === 'read' && 'bg-slate-800 text-slate-400 border border-slate-700',
+                              m.status === 'read' && 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700',
                               m.status === 'responded' && 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                             )}
                           >
@@ -617,7 +682,7 @@ export default function AdminContentPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-300 bg-slate-900 border border-slate-800 p-3 rounded-xl whitespace-pre-wrap">
+                        <p className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl whitespace-pre-wrap">
                           {m.message}
                         </p>
 
@@ -625,7 +690,7 @@ export default function AdminContentPage() {
                           {m.status === 'new' && (
                             <button
                               onClick={() => updateMessageStatus(m.id, 'read')}
-                              className="text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 px-3 py-1.5 rounded-xl transition-all"
+                              className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-xl transition-all"
                             >
                               Mark Read
                             </button>
@@ -641,6 +706,65 @@ export default function AdminContentPage() {
                         </div>
                       </div>
                     ))
+                  )}
+                </div>
+              )}
+
+              {/* TAB 5: PROPERTY CATEGORIES */}
+              {tab === 'categories' && (
+                <div className="space-y-6">
+                  <form
+                    onSubmit={handleCreateCategory}
+                    className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row gap-3"
+                  >
+                    <input
+                      type="text"
+                      placeholder="New category name (e.g. Penthouse)"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={submitting || !newCategoryName.trim()}
+                      className="inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-lg shadow-emerald-500/20"
+                    >
+                      <Plus className="w-4 h-4" /> Add Category
+                    </button>
+                  </form>
+
+                  {categoryError && (
+                    <p className="text-xs font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2.5">
+                      {categoryError}
+                    </p>
+                  )}
+
+                  {categories.length === 0 ? (
+                    <div className="p-12 text-center bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-500">
+                      <Tag className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-xs">No categories yet.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {categories.map((c) => (
+                        <div
+                          key={c.id}
+                          className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{c.name}</p>
+                            <p className="text-[11px] text-slate-600 dark:text-slate-500 truncate">{c.slug}</p>
+                          </div>
+                          <button
+                            onClick={() => deleteCategory(c.id)}
+                            className="p-2 rounded-xl text-slate-600 dark:text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
+                            aria-label="Delete category"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
@@ -670,10 +794,10 @@ function FaqForm({
   const [position, setPosition] = useState(faq?.position || 0);
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 className="font-bold text-sm text-white">{faq ? 'Edit FAQ' : 'New FAQ'}</h3>
-        <button onClick={onClose} className="text-slate-500 hover:text-slate-300">
+    <div className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <h3 className="font-bold text-sm text-slate-900 dark:text-white">{faq ? 'Edit FAQ' : 'New FAQ'}</h3>
+        <button onClick={onClose} className="text-slate-600 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -683,14 +807,14 @@ function FaqForm({
           placeholder="Question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
         />
         <textarea
           placeholder="Answer"
           rows={3}
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
         />
         <div className="grid grid-cols-2 gap-3">
           <input
@@ -698,14 +822,14 @@ function FaqForm({
             placeholder="Category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
           <input
             type="number"
             placeholder="Position"
             value={position}
             onChange={(e) => setPosition(parseInt(e.target.value) || 0)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
         <button
@@ -736,6 +860,7 @@ function BlogForm({
     excerpt: string;
     content: string;
     cover_image: string;
+    category: string;
     author: string;
     published: boolean;
   }) => void;
@@ -744,14 +869,15 @@ function BlogForm({
   const [excerpt, setExcerpt] = useState(post?.excerpt || '');
   const [content, setContent] = useState(post?.content || '');
   const [coverImage, setCoverImage] = useState(post?.cover_image || '');
+  const [category, setCategory] = useState(post?.category || '');
   const [author, setAuthor] = useState(post?.author || 'Remy Real Estates');
   const [published, setPublished] = useState(post?.published || false);
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 className="font-bold text-sm text-white">{post ? 'Edit Post' : 'New Blog Post'}</h3>
-        <button onClick={onClose} className="text-slate-500 hover:text-slate-300">
+    <div className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <h3 className="font-bold text-sm text-slate-900 dark:text-white">{post ? 'Edit Post' : 'New Blog Post'}</h3>
+        <button onClick={onClose} className="text-slate-600 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -761,51 +887,59 @@ function BlogForm({
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
         />
         <textarea
           placeholder="Excerpt (short summary)"
           rows={2}
           value={excerpt}
           onChange={(e) => setExcerpt(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
         />
         <textarea
-          placeholder="Content (use markdown syntax)"
+          placeholder="Content (plain text, line breaks are preserved)"
           rows={8}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none font-mono"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none font-mono"
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input
-            type="url"
-            placeholder="Cover Image URL"
-            value={coverImage}
-            onChange={(e) => setCoverImage(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-          />
-          <input
-            type="text"
-            placeholder="Author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+        <input
+          type="text"
+          placeholder="Category (e.g. Buying Guides, Market Trends)"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+        />
+        <div>
+          <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 block">
+            Cover Image
+          </label>
+          <ImageUploader
+            images={coverImage ? [coverImage] : []}
+            onChange={(images) => setCoverImage(images[0] || '')}
+            maxImages={1}
           />
         </div>
+        <input
+          type="text"
+          placeholder="Author"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+        />
         <label className="flex items-center gap-2 cursor-pointer pt-1">
           <input
             type="checkbox"
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
-            className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-emerald-500"
+            className="w-4 h-4 rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-emerald-500 focus:ring-emerald-500"
           />
-          <span className="text-xs text-slate-300">Publish immediately</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">Publish immediately</span>
         </label>
         <button
           disabled={submitting}
           onClick={() =>
-            onSave({ title, excerpt, content, cover_image: coverImage, author, published })
+            onSave({ title, excerpt, content, cover_image: coverImage, category, author, published })
           }
           className="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
         >

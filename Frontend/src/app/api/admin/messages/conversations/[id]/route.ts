@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Never cache this route - always proxy through to the backend for live data.
+export const dynamic = 'force-dynamic';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-export async function PATCH(
+export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -15,24 +17,18 @@ export async function PATCH(
       );
     }
 
-    const { id } = params;
-    const body = await request.json();
-
-    const backendResponse = await fetch(`${API_BASE_URL}/realtor/inquiries/${id}`, {
-      method: 'PATCH',
+    const backendResponse = await fetch(`${API_BASE_URL}/admin/messages/conversations/${params.id}`, {
+      method: 'GET',
       headers: {
         Authorization: authHeader,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ status: body.status }),
     });
 
     const data = await backendResponse.json().catch(() => null);
-    return NextResponse.json(data ?? { message: 'Inquiry updated' }, {
-      status: backendResponse.status,
-    });
+    return NextResponse.json(data ?? { messages: [] }, { status: backendResponse.status });
   } catch (error) {
-    console.error('Error in PATCH /api/inquiries/[id]:', error);
+    console.error('Error in GET /api/admin/messages/conversations/[id]:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }
@@ -40,7 +36,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
+export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -53,22 +49,28 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const body = await request.json().catch(() => ({}));
+    const content = body.content || body.message || '';
 
-    const backendResponse = await fetch(`${API_BASE_URL}/realtor/inquiries/${id}`, {
-      method: 'DELETE',
+    if (!content.trim()) {
+      return NextResponse.json({ error: 'Message content cannot be empty' }, { status: 400 });
+    }
+
+    const backendResponse = await fetch(`${API_BASE_URL}/admin/messages/conversations/${params.id}`, {
+      method: 'POST',
       headers: {
         Authorization: authHeader,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ content }),
     });
 
     const data = await backendResponse.json().catch(() => null);
-    return NextResponse.json(data ?? { deleted: true, id }, {
+    return NextResponse.json(data ?? { error: 'Failed to send message' }, {
       status: backendResponse.status,
     });
   } catch (error) {
-    console.error('Error in DELETE /api/inquiries/[id]:', error);
+    console.error('Error in POST /api/admin/messages/conversations/[id]:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }

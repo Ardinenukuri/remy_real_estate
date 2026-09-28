@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Home as HouseIcon, Building2, Upload, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Building2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { ImageUploader } from '@/components/ImageUploader';
 
 export default function ListPropertyPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     category: 'Villas',
@@ -170,14 +172,10 @@ export default function ListPropertyPage() {
                   ></textarea>
                 </div>
 
-                {/* Image Upload Box */}
+                {/* Drag and Drop Image Upload Box */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Property Photos</label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
-                    <Upload className="w-8 h-8 text-[var(--emerald)] mx-auto mb-2" />
-                    <p className="text-xs font-semibold text-slate-700">Click or drag photos here to upload</p>
-                    <p className="text-[10px] text-slate-400 mt-1">PNG, JPG or WEBP up to 10MB each</p>
-                  </div>
+                  <ImageUploader images={images} onChange={setImages} />
                 </div>
               </div>
 

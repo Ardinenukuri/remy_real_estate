@@ -13,7 +13,7 @@ export default function CustomerLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row">
       {/* Mobile Top Navigation Header */}
       <div className="lg:hidden flex items-center justify-between p-4 bg-slate-950 border-b border-slate-800">
         <Link href="/" className="flex items-center gap-2.5">

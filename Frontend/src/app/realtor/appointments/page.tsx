@@ -55,6 +55,7 @@ function RealtorAppointmentsContent() {
   // New Appointment Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [myProperties, setMyProperties] = useState<PropertyRef[]>([]);
   const [formData, setFormData] = useState({
     property_id: '',
     client_name: '',
@@ -64,6 +65,31 @@ function RealtorAppointmentsContent() {
     time: '',
     notes: '',
   });
+
+  // Load the realtor's own properties for the "Schedule Viewing" picker
+  useEffect(() => {
+    async function loadMyProperties() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const storedUser = localStorage.getItem('user');
+        const user = storedUser ? JSON.parse(storedUser) : null;
+        if (!user?.id) return;
+
+        const res = await fetch(`/api/properties?realtor_id=${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : data.properties || [];
+          setMyProperties(list);
+        }
+      } catch (err) {
+        console.error('Failed to load properties for appointment form:', err);
+      }
+    }
+
+    loadMyProperties();
+  }, []);
 
   // Load Appointments via API
   useEffect(() => {
@@ -200,13 +226,13 @@ function RealtorAppointmentsContent() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <CalendarIcon className="w-6 h-6 text-emerald-400" />
             Property Viewing Appointments
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Track and manage scheduled client property tours and meetings.
           </p>
         </div>
@@ -222,62 +248,62 @@ function RealtorAppointmentsContent() {
 
       {/* Summary Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-slate-800 text-slate-300">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
             <CalendarIcon className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white">{stats.total}</div>
-            <div className="text-xs text-slate-400">Total Bookings</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">Total Bookings</div>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4">
           <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <Clock className="w-5 h-5" />
           </div>
           <div>
             <div className="text-2xl font-bold text-amber-400">{stats.pending}</div>
-            <div className="text-xs text-slate-400">Awaiting Confirmation</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">Awaiting Confirmation</div>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4">
           <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
             <div className="text-2xl font-bold text-emerald-400">{stats.confirmed}</div>
-            <div className="text-xs text-slate-400">Confirmed</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">Confirmed</div>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4">
           <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
             <div className="text-2xl font-bold text-blue-400">{stats.completed}</div>
-            <div className="text-xs text-slate-400">Completed Tours</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">Completed Tours</div>
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 dark:text-slate-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by client, property, or date..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          <Filter className="w-4 h-4 text-slate-500 shrink-0 ml-1" />
+          <Filter className="w-4 h-4 text-slate-600 dark:text-slate-500 shrink-0 ml-1" />
           {(['all', 'pending', 'confirmed', 'completed', 'cancelled'] as const).map((st) => (
             <button
               key={st}
@@ -286,7 +312,7 @@ function RealtorAppointmentsContent() {
                 'px-3.5 py-1.5 rounded-xl text-xs font-medium capitalize transition-all shrink-0',
                 statusFilter === st
                   ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
-                  : 'bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700'
+                  : 'bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
               )}
             >
               {st}
@@ -297,20 +323,20 @@ function RealtorAppointmentsContent() {
 
       {/* Main Grid View */}
       {loading ? (
-        <div className="py-20 text-center bg-slate-900 border border-slate-800 rounded-2xl">
+        <div className="py-20 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Loading scheduled appointments...</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Loading scheduled appointments...</p>
         </div>
       ) : error ? (
-        <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl text-center">
+        <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-center">
           <AlertCircle className="w-10 h-10 text-rose-400 mx-auto mb-2" />
           <p className="text-rose-400 text-sm">{error}</p>
         </div>
       ) : filteredAppointments.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
           <CalendarIcon className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-1">No Appointments Found</h3>
-          <p className="text-slate-400 text-sm max-w-md mx-auto">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">No Appointments Found</h3>
+          <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
             {searchQuery || statusFilter !== 'all'
               ? 'No appointments match your active filter criteria.'
               : 'You do not have any property viewings scheduled.'}
@@ -330,13 +356,13 @@ function RealtorAppointmentsContent() {
                   className={cn(
                     'p-4 rounded-2xl border cursor-pointer transition-all space-y-3',
                     isSelected
-                      ? 'bg-slate-800/80 border-emerald-500 shadow-md shadow-emerald-500/5'
-                      : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                      ? 'bg-slate-100 dark:bg-slate-800/80 border-emerald-500 shadow-md shadow-emerald-500/5'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white text-sm">
+                      <span className="font-semibold text-slate-900 dark:text-white text-sm">
                         {appt.client_name}
                       </span>
                     </div>
@@ -364,13 +390,13 @@ function RealtorAppointmentsContent() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
+                  <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
-                      <CalendarIcon className="w-3.5 h-3.5 text-slate-500" />
+                      <CalendarIcon className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                       {appt.date}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-slate-500" />
+                      <Clock className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                       {appt.time}
                     </span>
                   </div>
@@ -380,18 +406,18 @@ function RealtorAppointmentsContent() {
           </div>
 
           {/* Detailed View Pane */}
-          <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6 sticky top-6">
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-6 sticky top-6">
             {selectedAppointment ? (
               <>
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
                   <div>
-                    <h2 className="text-xl font-bold text-white">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                       {selectedAppointment.client_name}
                     </h2>
-                    <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-400">
+                    <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
-                        <Mail className="w-3.5 h-3.5 text-slate-500" />
+                        <Mail className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                         <a
                           href={`mailto:${selectedAppointment.client_email}`}
                           className="hover:text-emerald-400 transition-colors"
@@ -401,7 +427,7 @@ function RealtorAppointmentsContent() {
                       </span>
                       {selectedAppointment.client_phone && (
                         <span className="flex items-center gap-1">
-                          <Phone className="w-3.5 h-3.5 text-slate-500" />
+                          <Phone className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                           <a
                             href={`tel:${selectedAppointment.client_phone}`}
                             className="hover:text-emerald-400 transition-colors"
@@ -421,7 +447,7 @@ function RealtorAppointmentsContent() {
                         e.target.value as Appointment['status']
                       )
                     }
-                    className="bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
+                    className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
                   >
                     <option value="pending">Status: Pending</option>
                     <option value="confirmed">Status: Confirmed</option>
@@ -432,30 +458,30 @@ function RealtorAppointmentsContent() {
 
                 {/* Property & Schedule Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase tracking-wider">
                       Tour Location
                     </span>
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
                       {selectedAppointment.property?.title || 'General Consultation'}
                     </p>
                     {selectedAppointment.property?.district && (
-                      <p className="text-xs text-slate-400 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-slate-500" />
+                      <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-slate-600 dark:text-slate-500" />
                         {selectedAppointment.property.district}
                       </p>
                     )}
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase tracking-wider">
                       Scheduled Time
                     </span>
                     <p className="text-sm font-semibold text-emerald-400">
                       {selectedAppointment.date} at {selectedAppointment.time}
                     </p>
-                    <p className="text-xs text-slate-400 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-500" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-slate-600 dark:text-slate-500" />
                       Client Request
                     </p>
                   </div>
@@ -464,17 +490,17 @@ function RealtorAppointmentsContent() {
                 {/* Client Notes */}
                 {selectedAppointment.notes && (
                   <div className="space-y-2">
-                    <span className="text-xs font-semibold text-slate-400">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                       Additional Client Notes
                     </span>
-                    <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">
                       {selectedAppointment.notes}
                     </div>
                   </div>
                 )}
               </>
             ) : (
-              <div className="py-16 text-center text-slate-500 text-sm">
+              <div className="py-16 text-center text-slate-600 dark:text-slate-500 text-sm">
                 Select an appointment to inspect viewing details.
               </div>
             )}
@@ -485,12 +511,12 @@ function RealtorAppointmentsContent() {
       {/* Schedule New Appointment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 space-y-6 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h3 className="text-lg font-bold text-white">Schedule New Property Viewing</h3>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl p-6 space-y-6 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Schedule New Property Viewing</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -498,21 +524,34 @@ function RealtorAppointmentsContent() {
 
             <form onSubmit={handleCreateAppointment} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">
-                  Property ID / Reference
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Property
                 </label>
-                <input
-                  type="text"
+                <select
                   required
-                  placeholder="e.g. prop_123"
                   value={formData.property_id}
                   onChange={(e) => setFormData({ ...formData, property_id: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-                />
+                  className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="" disabled>
+                    Select one of your listings...
+                  </option>
+                  {myProperties.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                      {p.district ? ` — ${p.district}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {myProperties.length === 0 && (
+                  <p className="text-[11px] text-slate-600 dark:text-slate-500 mt-1">
+                    You don't have any listings yet. Add one first from "My Listings".
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                   Client Full Name
                 </label>
                 <input
@@ -521,13 +560,13 @@ function RealtorAppointmentsContent() {
                   placeholder="John Doe"
                   value={formData.client_name}
                   onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Client Email
                   </label>
                   <input
@@ -536,12 +575,12 @@ function RealtorAppointmentsContent() {
                     placeholder="client@example.com"
                     value={formData.client_email}
                     onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Client Phone Number
                   </label>
                   <input
@@ -550,14 +589,14 @@ function RealtorAppointmentsContent() {
                     placeholder="+257 ..."
                     value={formData.client_phone}
                     onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Date
                   </label>
                   <input
@@ -565,12 +604,12 @@ function RealtorAppointmentsContent() {
                     required
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Time Slot
                   </label>
                   <input
@@ -578,13 +617,13 @@ function RealtorAppointmentsContent() {
                     required
                     value={formData.time}
                     onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                   Notes / Special Instructions
                 </label>
                 <textarea
@@ -592,7 +631,7 @@ function RealtorAppointmentsContent() {
                   placeholder="Optional notes regarding access or client requirements..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+                  className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors resize-none"
                 />
               </div>
 
@@ -600,7 +639,7 @@ function RealtorAppointmentsContent() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
                 >
                   Cancel
                 </button>
@@ -622,7 +661,7 @@ function RealtorAppointmentsContent() {
 
 export default function RealtorAppointmentsPage() {
   return (
-    <Suspense fallback={<div className="text-slate-400">Loading appointments...</div>}>
+    <Suspense fallback={<div className="text-slate-500 dark:text-slate-400">Loading appointments...</div>}>
       <RealtorAppointmentsContent />
     </Suspense>
   );

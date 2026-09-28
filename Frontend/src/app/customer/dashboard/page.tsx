@@ -63,21 +63,6 @@ function CustomerDashboardContent() {
           setStats(data.stats);
           setRecentSaved(data.recentSaved || []);
           setUpcomingTours(data.upcomingTours || []);
-        } else {
-          // Fallback demo data
-          setStats({
-            savedPropertiesCount: 5,
-            upcomingToursCount: 2,
-            unreadMessagesCount: 3,
-          });
-          setRecentSaved([
-            { id: '1', title: 'Modern Villa in Kiyovu', district: 'Kiyovu, Kigali', price: 350000, beds: 4, baths: 3 },
-            { id: '2', title: 'Luxury Apartment in Gacuriro', district: 'Gacuriro, Kigali', price: 180000, beds: 2, baths: 2 },
-          ]);
-          setUpcomingTours([
-            { id: '101', property_title: 'Modern Villa in Kiyovu', district: 'Kiyovu', date: '2026-08-15', time: '10:00 AM', status: 'confirmed', realtor_name: 'Eric Manzi' },
-            { id: '102', property_title: 'Commercial Suite Nyarugenge', district: 'Nyarugenge', date: '2026-08-18', time: '02:30 PM', status: 'pending', realtor_name: 'Aline Uwase' },
-          ]);
         }
       } catch (err) {
         console.error('Failed to load customer dashboard data:', err);
@@ -92,12 +77,12 @@ function CustomerDashboardContent() {
   return (
     <div className="space-y-8">
       {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Welcome Back 👋
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Manage your saved homes, viewings, and communications.
           </p>
         </div>
@@ -113,19 +98,19 @@ function CustomerDashboardContent() {
 
       {/* Overview Quick Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider block">Saved Homes</span>
-            <span className="text-2xl font-bold text-white mt-1 block">{stats.savedPropertiesCount}</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Saved Homes</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-white mt-1 block">{stats.savedPropertiesCount}</span>
           </div>
           <div className="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
             <Heart className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider block">Upcoming Tours</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Upcoming Tours</span>
             <span className="text-2xl font-bold text-emerald-400 mt-1 block">{stats.upcomingToursCount}</span>
           </div>
           <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -133,9 +118,9 @@ function CustomerDashboardContent() {
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider block">Unread Messages</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Unread Messages</span>
             <span className="text-2xl font-bold text-blue-400 mt-1 block">{stats.unreadMessagesCount}</span>
           </div>
           <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -147,9 +132,9 @@ function CustomerDashboardContent() {
       {/* Dashboard Sections Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Scheduled Tours */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Calendar className="w-4 h-4 text-emerald-400" />
               Scheduled Property Tours
             </h2>
@@ -159,15 +144,15 @@ function CustomerDashboardContent() {
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-slate-400 text-xs">Loading tour schedule...</div>
+            <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-xs">Loading tour schedule...</div>
           ) : upcomingTours.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 text-sm">No property tours scheduled yet.</div>
+            <div className="py-12 text-center text-slate-600 dark:text-slate-500 text-sm">No property tours scheduled yet.</div>
           ) : (
             <div className="space-y-3">
               {upcomingTours.map((tour) => (
-                <div key={tour.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                <div key={tour.id} className="p-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-white">{tour.property_title}</h3>
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{tour.property_title}</h3>
                     <span
                       className={cn(
                         'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border',
@@ -180,16 +165,16 @@ function CustomerDashboardContent() {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                      <MapPin className="w-3.5 h-3.5 text-slate-600 dark:text-slate-500" />
                       {tour.district}
                     </span>
                     <span className="flex items-center gap-1 text-emerald-400 font-medium">
                       <Clock className="w-3.5 h-3.5" />
                       {tour.date} at {tour.time}
                     </span>
-                    <span className="flex items-center gap-1 text-slate-400">
+                    <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                       Agent: {tour.realtor_name}
                     </span>
                   </div>
@@ -200,9 +185,9 @@ function CustomerDashboardContent() {
         </div>
 
         {/* Saved Favorites */}
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Heart className="w-4 h-4 text-rose-400" />
               Saved Favorites
             </h2>
@@ -212,27 +197,27 @@ function CustomerDashboardContent() {
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-slate-400 text-xs">Loading favorites...</div>
+            <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-xs">Loading favorites...</div>
           ) : recentSaved.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 text-sm">You haven't saved any listings yet.</div>
+            <div className="py-12 text-center text-slate-600 dark:text-slate-500 text-sm">You haven't saved any listings yet.</div>
           ) : (
             <div className="space-y-3">
               {recentSaved.map((item) => (
-                <div key={item.id} className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3">
+                <div key={item.id} className="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <h4 className="text-sm font-semibold text-white truncate">{item.title}</h4>
-                    <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-slate-500" />
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{item.title}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3 text-slate-600 dark:text-slate-500" />
                       {item.district}
                     </p>
                     <span className="text-xs font-bold text-emerald-400 mt-1 block">
-                      ${item.price.toLocaleString()}
+                      RWF {item.price.toLocaleString()}
                     </span>
                   </div>
 
                   <Link
-                    href={`/properties/${item.id}`}
-                    className="p-2 rounded-lg bg-slate-800 hover:bg-emerald-500 text-slate-300 hover:text-white transition-colors"
+                    href={`/customer/property/${item.id}`}
+                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500 text-slate-600 dark:text-slate-300 hover:text-white transition-colors"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Link>
@@ -248,7 +233,7 @@ function CustomerDashboardContent() {
 
 export default function CustomerDashboardPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-slate-400">Loading customer dashboard...</div>}>
+    <Suspense fallback={<div className="p-8 text-slate-500 dark:text-slate-400">Loading customer dashboard...</div>}>
       <CustomerDashboardContent />
     </Suspense>
   );

@@ -101,6 +101,16 @@ export const Footer = () => {
                   About Us
                 </Link>
               </li>
+              <li>
+                <Link className="text-sm text-white/60 hover:text-[var(--emerald)] transition-colors" href="/faq">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link className="text-sm text-white/60 hover:text-[var(--emerald)] transition-colors" href="/blog">
+                  Blog
+                </Link>
+              </li>
             </ul>
           </div>
 
