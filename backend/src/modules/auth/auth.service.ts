@@ -20,12 +20,22 @@ export class AuthService {
   ) {}
 
   // 1. REGISTER USER
-  async register(registerDto: RegisterDto) {
-    const { email, password, firstName, lastName, role, phoneNumber } = registerDto;
+  async register(registerDto: RegisterDto, cvUrl?: string) {
+    const { email, password, firstName, lastName, role, phoneNumber, motivationLetter } = registerDto;
 
     const existingUser = await this.userRepository.findOne({ where: { email } });
     if (existingUser) {
       throw new BadRequestException('User with this email already exists.');
+    }
+
+    const isRealtorApplication = role === UserRole.REALTOR;
+
+    // A realtor application isn't complete without something for the admin
+    // to actually review - a CV and a motivation letter are the minimum.
+    if (isRealtorApplication && (!cvUrl || !motivationLetter?.trim())) {
+      throw new BadRequestException(
+        'Realtor applications require both a CV upload and a motivation letter.',
+      );
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -40,13 +50,27 @@ export class AuthService {
       phoneNumber,
       emailVerificationToken: verificationToken,
       isEmailVerified: false,
+      cvUrl: isRealtorApplication ? cvUrl : undefined,
+      motivationLetter: isRealtorApplication ? motivationLetter : undefined,
     });
 
     await this.userRepository.save(newUser);
     await this.mailService.sendVerificationEmail(email, verificationToken);
 
+    if (isRealtorApplication) {
+      const admins = await this.userRepository.find({ where: { role: UserRole.ADMIN } });
+      const realtorName = `${firstName || ''} ${lastName || ''}`.trim() || email;
+      admins.forEach((admin) => {
+        this.mailService
+          .sendNewRealtorPendingEmail(admin.email, realtorName, email)
+          .catch((err) => console.error('Failed to notify admin of new realtor signup:', err));
+      });
+    }
+
     return {
-      message: 'Registration successful! Please check your email to verify your account.',
+      message: isRealtorApplication
+        ? 'Registration successful! Please verify your email. Your realtor application (CV and motivation letter) is now pending admin review.'
+        : 'Registration successful! Please check your email to verify your account.',
     };
   }
 
@@ -79,7 +103,19 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: ['id', 'firstName', 'lastName', 'email', 'passwordHash', 'role', 'isEmailVerified', 'isVerifiedRealtor'],
+      select: [
+        'id',
+        'firstName',
+        'lastName',
+        'email',
+        'passwordHash',
+        'role',
+        'isEmailVerified',
+        'isVerifiedRealtor',
+        'avatarUrl',
+        'isBanned',
+        'bannedAt',
+      ],
     });
 
     if (!user) {
@@ -91,9 +127,26 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
+    // Banned Account Guard - checked before anything else so a banned user
+    // can't slip through even if their email happens to still be unverified.
+    if (user.isBanned) {
+      throw new UnauthorizedException(
+        'Your account has been suspended. Please contact support if you believe this is a mistake.',
+      );
+    }
+
     // Unverified Email Guard
     if (!user.isEmailVerified) {
       throw new UnauthorizedException('Your email is not verified. Please check your inbox.');
+    }
+
+    // Realtors need a separate admin approval before they can act as a realtor,
+    // even once their email is verified - email ownership isn't the same as
+    // being a vetted agent.
+    if (user.role === UserRole.REALTOR && !user.isVerifiedRealtor) {
+      throw new UnauthorizedException(
+        'Your realtor account is pending admin approval. You will receive an email once approved.',
+      );
     }
 
     // Generate JWT Token with Role embedded
@@ -117,6 +170,7 @@ export class AuthService {
         email: user.email,
         role: user.role, // role returned to client
         isVerifiedRealtor: user.isVerifiedRealtor,
+        avatarUrl: user.avatarUrl,
       },
     };
   }

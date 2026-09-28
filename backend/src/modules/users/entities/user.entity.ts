@@ -50,6 +50,37 @@ export class UserEntity {
   @Column({ nullable: true })
   phoneNumber: string;
 
+  @Column({ nullable: true })
+  avatarUrl: string;
+
+  // Realtor-facing profile details, shown on the public "Meet Our Realtors"
+  // page once the account is verified. Nullable since customers/admins don't use them.
+  @Column({ type: 'text', nullable: true })
+  bio: string;
+
+  @Column({ nullable: true })
+  agencyName: string;
+
+  @Column({ nullable: true })
+  licenseNumber: string;
+
+  @Column({ type: 'int', nullable: true })
+  yearsExperience: number;
+
+  @Column({ nullable: true })
+  specialization: string;
+
+  @Column({ nullable: true })
+  officeAddress: string;
+
+  // Realtor application materials, submitted at registration and reviewed by
+  // an admin before isVerifiedRealtor is flipped to true.
+  @Column({ nullable: true })
+  cvUrl: string;
+
+  @Column({ type: 'text', nullable: true })
+  motivationLetter: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

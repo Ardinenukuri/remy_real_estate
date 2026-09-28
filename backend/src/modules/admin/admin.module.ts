@@ -7,14 +7,33 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { Property } from '../properties/entities/property.entity';
+import { Category } from '../properties/entities/category.entity';
 import { Inquiry } from '../inquiries/entities/inquiry.entity';
+import { BlogPost } from '../content/entities/blog-post.entity';
+import { Faq } from '../content/entities/faq.entity';
+import { Testimonial } from '../content/entities/testimonial.entity';
+import { ContactMessage } from '../content/entities/contact-message.entity';
+import { Message } from '../messages/entities/message.entity';
+import { Conversation } from '../messages/entities/conversation.entity';
 import { UsersController } from '../users/users.controller';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { MailService } from '../mail/mail.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, Property, Inquiry]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      Property,
+      Category,
+      Inquiry,
+      BlogPost,
+      Faq,
+      Testimonial,
+      ContactMessage,
+      Message,
+      Conversation,
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,7 +50,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
     }),
   ],
   controllers: [AdminController, UsersController],
-  providers: [AdminService, JwtAuthGuard, RolesGuard],
+  providers: [AdminService, JwtAuthGuard, RolesGuard, MailService],
   exports: [AdminService],
 })
 export class AdminModule {}

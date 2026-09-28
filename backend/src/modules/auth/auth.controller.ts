@@ -1,4 +1,16 @@
-import { Controller, Post, Body, Query, Get, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { AuthService } from './auth.service';
 import { RegisterDto } from '../../modules/users/dto/register.dto';
 import { LoginDto } from '../../modules/users/dto/login.dto';
@@ -10,8 +22,24 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  @UseInterceptors(
+    FileInterceptor('cv', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  async register(@Body() registerDto: RegisterDto, @UploadedFile() cv?: any) {
+    const cvUrl = cv ? `/uploads/${cv.filename}` : undefined;
+    return this.authService.register(registerDto, cvUrl);
   }
 
   @Post('verify-email')

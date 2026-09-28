@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
@@ -28,6 +29,26 @@ export class AdminController {
   @Get('dashboard-stats')
   async getDashboardStats() {
     return this.adminService.getDashboardStats();
+  }
+
+  @Get('notifications/counts')
+  async getNotificationCounts(@Req() req: any) {
+    return this.adminService.getNotificationCounts(req.user?.sub);
+  }
+
+  @Get('messages/conversations')
+  async getConversations(@Req() req: any) {
+    return this.adminService.getConversations(req.user?.sub);
+  }
+
+  @Get('messages/conversations/:id')
+  async getConversationMessages(@Req() req: any, @Param('id') id: string) {
+    return this.adminService.getConversationMessages(req.user?.sub, id);
+  }
+
+  @Post('messages/conversations/:id')
+  async sendMessage(@Req() req: any, @Param('id') id: string, @Body() body: { content?: string }) {
+    return this.adminService.sendMessage(req.user?.sub, id, body?.content || '');
   }
 
   @Get('users')
@@ -87,18 +108,18 @@ export class AdminController {
   }
 
   @Get('profile')
-  async getAdminProfile() {
-    return this.adminService.getAdminProfile();
+  async getAdminProfile(@Req() req: any) {
+    return this.adminService.getAdminProfile(req.user?.sub);
   }
 
   @Put('profile')
-  async updateAdminProfile(@Body() payload: any) {
-    return this.adminService.updateAdminProfile(payload);
+  async updateAdminProfile(@Req() req: any, @Body() payload: any) {
+    return this.adminService.updateAdminProfile(payload, req.user?.sub);
   }
 
   @Post('change-password')
-  async changeAdminPassword(@Body() payload: any) {
-    return this.adminService.changeAdminPassword(payload);
+  async changeAdminPassword(@Req() req: any, @Body() payload: any) {
+    return this.adminService.changeAdminPassword(payload, req.user?.sub);
   }
 
   @Get('reports')
@@ -144,6 +165,21 @@ export class AdminController {
   @Delete('faqs/:id')
   async deleteFaq(@Param('id') id: string) {
     return this.adminService.deleteFaq(id);
+  }
+
+  @Get('categories')
+  async getCategories() {
+    return this.adminService.getCategories();
+  }
+
+  @Post('categories')
+  async createCategory(@Body() payload: any) {
+    return this.adminService.createCategory(payload);
+  }
+
+  @Delete('categories/:id')
+  async deleteCategory(@Param('id') id: string) {
+    return this.adminService.deleteCategory(id);
   }
 
   @Get('testimonials')

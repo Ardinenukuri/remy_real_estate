@@ -29,7 +29,7 @@ export class Property {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ type: 'decimal', precision: 18, scale: 2 })
   price: number;
 
   @Column({ nullable: true })
@@ -72,11 +72,20 @@ export class Property {
   @Column({ nullable: true })
   category: string;
 
+  @Column({ type: 'float', nullable: true })
+  latitude: number;
+
+  @Column({ type: 'float', nullable: true })
+  longitude: number;
+
   @Column({ type: 'int', default: 0 })
   views: number;
 
   @Column({ type: 'text', array: true, nullable: true })
   images: string[];
+
+  @Column({ type: 'text', array: true, nullable: true })
+  amenities: string[];
 
   // Foreign Key to Realtor (UserEntity)
   @Column({ nullable: true })

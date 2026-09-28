@@ -19,43 +19,53 @@ export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
   @Get('explore')
-  async getExploreProperties() {
-    return this.customerService.getExploreProperties();
+  async getExploreProperties(@Req() req: any) {
+    return this.customerService.getExploreProperties(req.user?.sub);
   }
 
   @Get('dashboard')
-  async getDashboard() {
-    return this.customerService.getDashboard();
+  async getDashboard(@Req() req: any) {
+    return this.customerService.getDashboard(req.user?.sub);
   }
 
   @Get('properties/:id')
-  async getPropertyDetails(@Param('id') id: string) {
-    return this.customerService.getPropertyDetails(id);
+  async getPropertyDetails(@Req() req: any, @Param('id') id: string) {
+    return this.customerService.getPropertyDetails(id, req.user?.sub);
+  }
+
+  @Get('notifications/counts')
+  async getNotificationCounts(@Req() req: any) {
+    return this.customerService.getNotificationCounts(req.user?.sub);
   }
 
   @Get('saved-properties')
-  async getSavedProperties() {
-    return this.customerService.getSavedProperties();
+  async getSavedProperties(@Req() req: any) {
+    return this.customerService.getSavedProperties(req.user?.sub);
+  }
+
+  @Post('saved-properties')
+  async saveProperty(@Req() req: any, @Body() body: { property_id?: string }) {
+    return this.customerService.saveProperty(req.user?.sub, body?.property_id);
   }
 
   @Delete('saved-properties/:id')
-  async removeSavedProperty(@Param('id') id: string) {
-    return this.customerService.removeSavedProperty(id);
+  async removeSavedProperty(@Req() req: any, @Param('id') id: string) {
+    return this.customerService.removeSavedProperty(req.user?.sub, id);
   }
 
   @Get('tours')
-  async getTours() {
-    return this.customerService.getTours();
+  async getTours(@Req() req: any) {
+    return this.customerService.getTours(req.user?.sub);
   }
 
   @Post('tours')
-  async scheduleTour(@Body() body: any) {
-    return this.customerService.scheduleTour(body);
+  async scheduleTour(@Req() req: any, @Body() body: any) {
+    return this.customerService.scheduleTour(req.user?.sub, body);
   }
 
   @Patch('tours/:id/cancel')
-  async cancelTour(@Param('id') id: string) {
-    return this.customerService.cancelTour(id);
+  async cancelTour(@Req() req: any, @Param('id') id: string) {
+    return this.customerService.cancelTour(req.user?.sub, id);
   }
 
   @Get('users/contacts')
@@ -63,19 +73,29 @@ export class CustomerController {
     return this.customerService.getContacts();
   }
 
+  @Post('testimonials')
+  async submitTestimonial(@Req() req: any, @Body() body: any) {
+    return this.customerService.submitTestimonial(req.user?.sub, body);
+  }
+
   @Get('messages/conversations')
-  async getConversations() {
-    return this.customerService.getConversations();
+  async getConversations(@Req() req: any) {
+    return this.customerService.getConversations(req.user?.sub);
+  }
+
+  @Post('messages/conversations')
+  async startConversation(@Req() req: any, @Body() body: any) {
+    return this.customerService.startConversation(req.user?.sub, body);
   }
 
   @Get('messages/conversations/:id')
-  async getConversationMessages(@Param('id') id: string) {
-    return this.customerService.getConversationMessages(id);
+  async getConversationMessages(@Req() req: any, @Param('id') id: string) {
+    return this.customerService.getConversationMessages(req.user?.sub, id);
   }
 
   @Post('messages/conversations/:id')
-  async sendMessage(@Param('id') id: string, @Body() body: { content?: string }) {
-    return this.customerService.sendMessage(id, body?.content || '');
+  async sendMessage(@Req() req: any, @Param('id') id: string, @Body() body: { content?: string }) {
+    return this.customerService.sendMessage(req.user?.sub, id, body?.content || '');
   }
 
   @Get('profile')

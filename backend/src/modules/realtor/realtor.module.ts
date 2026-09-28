@@ -6,12 +6,17 @@ import { RealtorController } from './realtor.controller';
 import { RealtorService } from './realtor.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { Property } from '../properties/entities/property.entity';
-import { Inquiry } from '../inquiries/entities/inquiry.entity';
+import { PropertyView } from '../properties/entities/property-view.entity';
+import { Category } from '../properties/entities/category.entity';
+import { Message } from '../messages/entities/message.entity';
+import { Conversation } from '../messages/entities/conversation.entity';
+import { Tour } from '../tours/entities/tour.entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { MailService } from '../mail/mail.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, Property, Inquiry]),
+    TypeOrmModule.forFeature([UserEntity, Property, PropertyView, Category, Message, Conversation, Tour]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -28,7 +33,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
     }),
   ],
   controllers: [RealtorController],
-  providers: [RealtorService, JwtAuthGuard],
+  providers: [RealtorService, JwtAuthGuard, MailService],
   exports: [RealtorService],
 })
 export class RealtorModule {}
