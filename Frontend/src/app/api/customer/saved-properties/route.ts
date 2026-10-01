@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/customer/saved-properties`, {
+      cache: 'no-store',
       method: 'GET',
       headers: {
         Authorization: authHeader,
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/customer/saved-properties`, {
+      cache: 'no-store',
       method: 'POST',
       headers: {
         Authorization: authHeader,
@@ -88,6 +90,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/customer/saved-properties/${propertyId}`, {
+      cache: 'no-store',
       method: 'DELETE',
       headers: { Authorization: authHeader },
     });

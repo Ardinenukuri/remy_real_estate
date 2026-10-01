@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     if (authHeader) backendHeaders.Authorization = authHeader;
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/properties`, {
+      cache: 'no-store',
       method: 'POST',
       headers: backendHeaders,
       body: JSON.stringify(body),

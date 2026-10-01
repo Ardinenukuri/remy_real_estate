@@ -20,6 +20,7 @@ export async function PATCH(
     const { id } = params;
 
     const backendResponse = await fetch(`${API_BASE_URL}/customer/tours/${id}/cancel`, {
+      cache: 'no-store',
       method: 'PATCH',
       headers: {
         Authorization: authHeader,

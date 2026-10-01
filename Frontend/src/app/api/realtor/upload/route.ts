@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     try {
       if (authHeader) {
         await fetch(`${API_BASE_URL}/realtor/upload`, {
+      cache: 'no-store',
           method: 'POST',
           headers: { Authorization: authHeader },
           body: formData,

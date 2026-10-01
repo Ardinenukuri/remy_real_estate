@@ -21,6 +21,7 @@ export async function PATCH(
     const body = await request.json();
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/appointments/${id}`, {
+      cache: 'no-store',
       method: 'PATCH',
       headers: {
         Authorization: authHeader,

@@ -21,6 +21,7 @@ export async function PATCH(
     const body = await request.json();
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/faqs/${id}`, {
+      cache: 'no-store',
       method: 'PATCH',
       headers: {
         Authorization: authHeader,
@@ -58,6 +59,7 @@ export async function DELETE(
     const { id } = params;
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/faqs/${id}`, {
+      cache: 'no-store',
       method: 'DELETE',
       headers: {
         Authorization: authHeader,

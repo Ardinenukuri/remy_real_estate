@@ -20,6 +20,7 @@ export async function DELETE(
     const { id } = params;
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/properties/${id}`, {
+      cache: 'no-store',
       method: 'DELETE',
       headers: {
         Authorization: authHeader,

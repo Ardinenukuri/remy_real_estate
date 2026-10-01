@@ -21,6 +21,7 @@ export async function PATCH(
     const body = await request.json();
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/properties/${id}/approve`, {
+      cache: 'no-store',
       method: 'PATCH',
       headers: {
         Authorization: authHeader,

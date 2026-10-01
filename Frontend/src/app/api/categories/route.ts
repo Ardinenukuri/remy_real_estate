@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     if (authHeader) backendHeaders.Authorization = authHeader;
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/categories`, {
+      cache: 'no-store',
       method: 'GET',
       headers: backendHeaders,
     });
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
     if (authHeader) backendHeaders.Authorization = authHeader;
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/categories`, {
+      cache: 'no-store',
       method: 'POST',
       headers: backendHeaders,
       body: JSON.stringify(body),

@@ -7,6 +7,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/a
 export async function GET(request: NextRequest) {
   try {
     const backendResponse = await fetch(`${API_BASE_URL}/blog`, {
+      cache: 'no-store',
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });

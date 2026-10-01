@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/categories`, {
+      cache: 'no-store',
       method: 'GET',
       headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
     });
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/categories`, {
+      cache: 'no-store',
       method: 'POST',
       headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

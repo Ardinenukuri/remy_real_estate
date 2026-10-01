@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     const backendResponse = await fetch(
       `${API_BASE_URL}/admin/properties?${query.toString()}`,
       {
+        cache: 'no-store',
         method: 'GET',
         headers: {
           Authorization: authHeader,

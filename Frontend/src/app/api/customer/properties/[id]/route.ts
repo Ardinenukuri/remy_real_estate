@@ -20,6 +20,7 @@ export async function GET(
     const { id } = params;
 
     const backendResponse = await fetch(`${API_BASE_URL}/customer/properties/${id}`, {
+      cache: 'no-store',
       method: 'GET',
       headers: {
         Authorization: authHeader,

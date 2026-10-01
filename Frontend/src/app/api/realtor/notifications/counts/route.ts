@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/notifications/counts`, {
+      cache: 'no-store',
       method: 'GET',
       headers: {
         Authorization: authHeader,

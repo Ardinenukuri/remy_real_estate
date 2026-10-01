@@ -15,6 +15,7 @@ export async function DELETE(
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/categories/${params.id}`, {
+      cache: 'no-store',
       method: 'DELETE',
       headers: { Authorization: authHeader },
     });

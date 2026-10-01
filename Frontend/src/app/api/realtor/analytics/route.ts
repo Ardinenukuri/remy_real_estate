@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const range = searchParams.get('range') || '30d';
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/analytics?range=${range}`, {
+      cache: 'no-store',
       method: 'GET',
       headers: {
         Authorization: authHeader,

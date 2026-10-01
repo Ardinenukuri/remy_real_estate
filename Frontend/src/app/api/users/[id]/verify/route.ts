@@ -28,6 +28,7 @@ export async function PATCH(
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/users/${id}/verify`, {
+      cache: 'no-store',
       method: 'PATCH',
       headers: {
         Authorization: authHeader,

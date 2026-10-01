@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
 
     const backendResponse = await fetch(`${API_BASE_URL}/contact`, {
+      cache: 'no-store',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

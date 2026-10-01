@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const backendResponse = await fetch(`${API_BASE_URL}/customer/change-password`, {
+      cache: 'no-store',
       method: 'POST',
       headers: {
         Authorization: authHeader,

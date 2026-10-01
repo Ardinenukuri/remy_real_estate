@@ -18,6 +18,7 @@ export async function GET(
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/messages/conversations/${params.id}`, {
+      cache: 'no-store',
       method: 'GET',
       headers: {
         Authorization: authHeader,
@@ -57,6 +58,7 @@ export async function POST(
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/realtor/messages/conversations/${params.id}`, {
+      cache: 'no-store',
       method: 'POST',
       headers: {
         Authorization: authHeader,

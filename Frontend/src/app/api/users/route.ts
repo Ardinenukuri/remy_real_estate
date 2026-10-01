@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     const backendResponse = await fetch(
       `${API_BASE_URL}/users?filter=${encodeURIComponent(filter)}`,
       {
+        cache: 'no-store',
         method: 'GET',
         headers: {
           Authorization: authHeader,

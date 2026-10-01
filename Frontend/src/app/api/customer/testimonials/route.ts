@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
 
     const backendResponse = await fetch(`${API_BASE_URL}/customer/testimonials`, {
+      cache: 'no-store',
       method: 'POST',
       headers: {
         Authorization: authHeader,

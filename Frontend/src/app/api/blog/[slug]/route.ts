@@ -10,6 +10,7 @@ export async function GET(
 ) {
   try {
     const backendResponse = await fetch(`${API_BASE_URL}/blog/${params.slug}`, {
+      cache: 'no-store',
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });

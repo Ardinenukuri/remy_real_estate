@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/blogs`, {
+      cache: 'no-store',
       method: 'GET',
       headers: {
         Authorization: authHeader,
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const backendResponse = await fetch(`${API_BASE_URL}/admin/blogs`, {
+      cache: 'no-store',
       method: 'POST',
       headers: {
         Authorization: authHeader,
