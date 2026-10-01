@@ -40,7 +40,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
     .split(',')
-    .map((origin) => origin.trim());
+    .map((origin) => origin.trim().replace(/\/+$/, ''));
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
