@@ -28,31 +28,55 @@ import { ContentModule } from './modules/content/content.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: Number(configService.get<number>('DB_PORT', 5432)),
-        username: configService.get<string>('DB_USERNAME', 'postgres'),
-        password: configService.get<string>('DB_PASSWORD', '1234'),
-        database: configService.get<string>('DB_NAME', 'real_estate'),
-        entities: [
-          UserEntity,
-          Property,
-          PropertyView,
-          Category,
-          Inquiry,
-          Message,
-          Conversation,
-          Tour,
-          SavedProperty,
-          BlogPost,
-          Faq,
-          Testimonial,
-          ContactMessage,
-        ],
-        synchronize: true,
-        logging: true,
-      }),
+      useFactory: (configService: ConfigService) => {
+        // Most free managed Postgres providers (Neon, Supabase, Render) hand
+        // out a single connection string rather than separate host/user/pass
+        // vars, and require SSL. DATABASE_URL takes over when set; local dev
+        // keeps using the discrete DB_* vars with SSL off.
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+        const sslEnabled =
+          configService.get<string>('DB_SSL', isProduction ? 'true' : 'false') === 'true';
+
+        const connection = databaseUrl
+          ? { url: databaseUrl }
+          : {
+              host: configService.get<string>('DB_HOST', 'localhost'),
+              port: Number(configService.get<number>('DB_PORT', 5432)),
+              username: configService.get<string>('DB_USERNAME', 'postgres'),
+              password: configService.get<string>('DB_PASSWORD', '1234'),
+              database: configService.get<string>('DB_NAME', 'real_estate'),
+            };
+
+        return {
+          type: 'postgres' as const,
+          ...connection,
+          // Explicit schema instead of relying on the connection's search_path:
+          // Neon's pooled endpoint doesn't reliably apply role/database-level
+          // search_path defaults to pooled backend connections, which would
+          // make every unqualified TypeORM query fail with "relation does not
+          // exist". Schema-qualifying here sidesteps that entirely.
+          schema: 'public',
+          ssl: sslEnabled ? { rejectUnauthorized: false } : false,
+          entities: [
+            UserEntity,
+            Property,
+            PropertyView,
+            Category,
+            Inquiry,
+            Message,
+            Conversation,
+            Tour,
+            SavedProperty,
+            BlogPost,
+            Faq,
+            Testimonial,
+            ContactMessage,
+          ],
+          synchronize: true,
+          logging: !isProduction,
+        };
+      },
     }),
     AuthModule,
     AdminModule,

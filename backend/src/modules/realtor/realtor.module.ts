@@ -13,6 +13,7 @@ import { Conversation } from '../messages/entities/conversation.entity';
 import { Tour } from '../tours/entities/tour.entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { MailService } from '../mail/mail.service';
+import { CloudinaryService } from '../../common/services/cloudinary.service';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { MailService } from '../mail/mail.service';
     }),
   ],
   controllers: [RealtorController],
-  providers: [RealtorService, JwtAuthGuard, MailService],
+  providers: [RealtorService, JwtAuthGuard, MailService, CloudinaryService],
   exports: [RealtorService],
 })
 export class RealtorModule {}

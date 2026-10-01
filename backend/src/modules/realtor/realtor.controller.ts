@@ -14,17 +14,18 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { JwtService } from '@nestjs/jwt';
 import { RealtorService } from './realtor.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CloudinaryService } from '../../common/services/cloudinary.service';
 
 @Controller('realtor')
 export class RealtorController {
   constructor(
     private readonly realtorService: RealtorService,
     private readonly jwtService: JwtService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   @Get('directory')
@@ -93,27 +94,18 @@ export class RealtorController {
 
   @Post('upload')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          cb(null, `${randomName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
   async uploadFile(@UploadedFile() file: any) {
     if (!file) {
       return { error: 'No file uploaded' };
     }
+    const result = await this.cloudinaryService.uploadBuffer(file.buffer, {
+      folder: 'remy-real-estate/images',
+      resourceType: 'image',
+    });
     return {
-      url: `/uploads/${file.filename}`,
-      filename: file.filename,
+      url: result.secure_url,
+      filename: result.public_id,
       originalname: file.originalname,
       size: file.size,
     };

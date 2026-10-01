@@ -9,9 +9,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { AuthService } from './auth.service';
+import { CloudinaryService } from '../../common/services/cloudinary.service';
 import { RegisterDto } from '../../modules/users/dto/register.dto';
 import { LoginDto } from '../../modules/users/dto/login.dto';
 import { ForgotPasswordDto } from '../../modules/users/dto/forgot-password.dto';
@@ -19,26 +19,23 @@ import { ResetPasswordDto } from '../../modules/users/dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @Post('register')
   @UseInterceptors(
     FileInterceptor('cv', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          cb(null, `${randomName}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   async register(@Body() registerDto: RegisterDto, @UploadedFile() cv?: any) {
-    const cvUrl = cv ? `/uploads/${cv.filename}` : undefined;
+    const cvUrl = cv
+      ? (await this.cloudinaryService.uploadBuffer(cv.buffer, { folder: 'remy-real-estate/cvs', resourceType: 'raw' }))
+          .secure_url
+      : undefined;
     return this.authService.register(registerDto, cvUrl);
   }
 
