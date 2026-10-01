@@ -12,8 +12,8 @@ Frontend/out/
 Frontend/build/
 
 # NestJS build output
-Backend/dist/
-Backend/build/
+backend/dist/
+backend/build/
 
 # Environment files
 .env
