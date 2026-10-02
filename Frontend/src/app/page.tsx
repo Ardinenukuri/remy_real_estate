@@ -112,7 +112,7 @@ export default function HomePage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--navy)]/70 via-[var(--navy)]/50 to-[var(--navy)]/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--navy)]/85 via-[var(--navy)]/75 to-[var(--navy)]/90" />
         </div>
 
         {/* Floating Top Metrics Bar */}
@@ -121,15 +121,15 @@ export default function HomePage() {
             <div className="hidden lg:flex items-center gap-8 py-3 px-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
               <div className="text-center">
                 <div className="text-white font-bold text-lg leading-none">1,200+</div>
-                <div className="text-white/60 text-xs mt-1">Properties Listed</div>
+                <div className="text-white/80 text-xs mt-1">Properties Listed</div>
               </div>
               <div className="text-center">
                 <div className="text-white font-bold text-lg leading-none">850+</div>
-                <div className="text-white/60 text-xs mt-1">Happy Clients</div>
+                <div className="text-white/80 text-xs mt-1">Happy Clients</div>
               </div>
               <div className="text-center">
                 <div className="text-white font-bold text-lg leading-none">120+</div>
-                <div className="text-white/60 text-xs mt-1">Verified Realtors</div>
+                <div className="text-white/80 text-xs mt-1">Verified Realtors</div>
               </div>
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function HomePage() {
             <span className="text-[var(--emerald)]">with Verified</span> Listings
           </h1>
 
-          <p className="text-white/70 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-white/90 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
             Search top-tier residential, commercial, and luxury properties with direct realtor communication across Rwanda.
           </p>
 
@@ -232,7 +232,7 @@ export default function HomePage() {
 
           {/* Popular Tag Buttons */}
           <div className="mt-6 flex items-center justify-center flex-wrap gap-2">
-            <span className="text-white/50 text-xs">Popular:</span>
+            <span className="text-white/70 text-xs">Popular:</span>
             <Link href="/properties?location=Nyarutarama&category=villas">
               <span className="px-3 py-1 text-xs text-white/80 bg-white/10 hover:bg-[var(--emerald)]/30 border border-white/20 rounded-full transition-colors cursor-pointer">
                 Nyarutarama Villas
@@ -258,7 +258,7 @@ export default function HomePage() {
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 pointer-events-none">
-          <span className="text-white/40 text-xs">Scroll to explore</span>
+          <span className="text-white/60 text-xs">Scroll to explore</span>
           <div className="w-px h-8 bg-gradient-to-b from-white/40 to-transparent"></div>
         </div>
       </section>

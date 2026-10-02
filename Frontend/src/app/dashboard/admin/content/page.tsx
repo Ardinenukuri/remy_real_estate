@@ -16,6 +16,7 @@ import {
   User,
   Image as ImageIcon,
   Tag,
+  Menu,
 } from 'lucide-react';
 import { timeAgo, cn } from '@/lib/utils';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -354,6 +355,18 @@ export default function AdminContentPage() {
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Mobile Header */}
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 px-6 flex items-center gap-4 lg:hidden sticky top-0 z-40">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            aria-label="Open sidebar"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          <span className="font-bold text-slate-900 dark:text-white">Content Management</span>
+        </header>
+
         <main className="p-6 max-w-7xl w-full mx-auto space-y-6">
           {/* Header */}
           <div>
