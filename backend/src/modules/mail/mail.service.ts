@@ -1,27 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter;
+  private readonly logger = new Logger(MailService.name);
+  private resend: Resend;
 
   constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get('MAIL_HOST'),
-      port: this.configService.get('MAIL_PORT'),
-      secure: false,
-      auth: {
-        user: this.configService.get('MAIL_USER'),
-        pass: this.configService.get('MAIL_PASS'),
-      },
-    });
+    this.resend = new Resend(this.configService.get('RESEND_API_KEY'));
+  }
+
+  // Centralizes sending so one place logs failures instead of letting them
+  // bubble up as unhandled 500s on auth endpoints (forgot-password, register)
+  // that shouldn't fail just because a notification email couldn't go out.
+  private async send(params: { to: string; subject: string; html: string }) {
+    try {
+      const { error } = await this.resend.emails.send({
+        from: this.configService.get('MAIL_FROM') || 'Remy Real Estates <onboarding@resend.dev>',
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+      });
+      if (error) {
+        this.logger.error(`Failed to send email to ${params.to}: ${JSON.stringify(error)}`);
+      }
+    } catch (err) {
+      this.logger.error(`Failed to send email to ${params.to}`, err as Error);
+    }
   }
 
   async sendVerificationEmail(email: string, token: string) {
     const url = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${token}`;
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: 'Verify Your Email - Remy Real Estates',
       html: `
@@ -35,8 +46,7 @@ export class MailService {
 
   async sendPasswordResetEmail(email: string, token: string) {
     const url = `${this.configService.get('FRONTEND_URL')}/reset-password?token=${token}`;
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: 'Password Reset Request - Remy Real Estates',
       html: `
@@ -49,8 +59,7 @@ export class MailService {
   }
 
   async sendAccountBannedEmail(email: string, name: string, reason?: string) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: 'Account Suspended - Remy Real Estates',
       html: `
@@ -68,8 +77,7 @@ export class MailService {
   }
 
   async sendAccountUnbannedEmail(email: string, name: string) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: 'Account Reinstated - Remy Real Estates',
       html: `
@@ -89,8 +97,7 @@ export class MailService {
     subject: string,
     message: string,
   ) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: adminEmail,
       subject: `New Contact Message: ${subject} - Remy Real Estates`,
       html: `
@@ -108,8 +115,7 @@ export class MailService {
   }
 
   async sendNewRealtorPendingEmail(adminEmail: string, realtorName: string, realtorEmail: string) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: adminEmail,
       subject: 'New Realtor Awaiting Approval - Remy Real Estates',
       html: `
@@ -126,8 +132,7 @@ export class MailService {
   }
 
   async sendRealtorApprovedEmail(email: string, name: string) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: "You're Approved - Remy Real Estates",
       html: `
@@ -176,8 +181,7 @@ export class MailService {
       color: '#0F172A',
     };
 
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: `${copy.subject} - Remy Real Estates`,
       html: `
@@ -203,8 +207,7 @@ export class MailService {
     tourDate?: string,
     tourTime?: string,
   ) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: 'New Viewing Tour Request - Remy Real Estates',
       html: `
@@ -223,8 +226,7 @@ export class MailService {
   }
 
   async sendPropertySavedEmail(email: string, realtorName: string, customerName: string, propertyTitle: string) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: 'Someone Saved Your Listing - Remy Real Estates',
       html: `
@@ -241,8 +243,7 @@ export class MailService {
   }
 
   async sendRoleChangedEmail(email: string, name: string, newRole: string, oldRole?: string) {
-    await this.transporter.sendMail({
-      from: this.configService.get('MAIL_FROM'),
+    await this.send({
       to: email,
       subject: 'Account Role Updated - Remy Real Estates',
       html: `
