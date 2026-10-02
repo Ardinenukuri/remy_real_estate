@@ -82,7 +82,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--navy)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[var(--navy)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors">
       {/* Ambient background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--emerald)]/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -94,15 +94,15 @@ export default function SignInPage() {
               <HouseIcon className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col leading-none text-left">
-              <span className="text-white font-bold text-base tracking-wide">Remy</span>
+              <span className="text-slate-900 dark:text-white font-bold text-base tracking-wide">Remy</span>
               <span className="text-[var(--emerald)] text-[11px] font-medium tracking-widest uppercase">
                 Real Estates
               </span>
             </div>
           </Link>
 
-          <h1 className="font-heading text-3xl font-bold text-white">Sign In to Your Account</h1>
-          <p className="mt-2 text-xs text-slate-400">
+          <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-white">Sign In to Your Account</h1>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             Access your saved properties, active listings, and direct messages.
           </p>
         </div>
