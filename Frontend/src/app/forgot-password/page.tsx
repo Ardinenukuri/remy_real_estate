@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
 
               <div className="pt-4">
                 <Link
-                  href="/login"
+                  href="/signin"
                   className="w-full py-3 bg-[var(--navy)] hover:bg-slate-800 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition-colors shadow"
                 >
                   <ArrowLeft className="w-4 h-4" /> Return to Sign In
