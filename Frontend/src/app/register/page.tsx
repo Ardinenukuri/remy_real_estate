@@ -113,7 +113,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--navy)] flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-slate-50 dark:bg-[var(--navy)] flex items-center justify-center px-4 py-16 transition-colors">
       <div className="w-full max-w-lg">
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
@@ -122,14 +122,14 @@ export default function RegisterPage() {
               <HouseIcon className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col leading-none text-left">
-              <span className="text-white font-bold tracking-wide">Remy</span>
+              <span className="text-slate-900 dark:text-white font-bold tracking-wide">Remy</span>
               <span className="text-[var(--emerald)] text-[10px] font-medium tracking-widest uppercase">
                 Real Estates
               </span>
             </div>
           </Link>
-          <h1 className="font-heading text-2xl font-bold text-white mb-1">Create Your Account</h1>
-          <p className="text-white/50 text-sm">Join Rwanda's most trusted real estate platform</p>
+          <h1 className="font-heading text-2xl font-bold text-slate-900 dark:text-white mb-1">Create Your Account</h1>
+          <p className="text-slate-500 dark:text-white/50 text-sm">Join Rwanda's most trusted real estate platform</p>
         </div>
 
         {/* Card */}

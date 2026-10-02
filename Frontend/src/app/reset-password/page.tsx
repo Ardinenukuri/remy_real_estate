@@ -67,7 +67,7 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--navy)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[var(--navy)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors">
       {/* Ambient background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--emerald)]/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -79,28 +79,28 @@ function ResetPasswordContent() {
               <HouseIcon className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col leading-none text-left">
-              <span className="text-white font-bold text-base tracking-wide">Remy</span>
+              <span className="text-slate-900 dark:text-white font-bold text-base tracking-wide">Remy</span>
               <span className="text-[var(--emerald)] text-[11px] font-medium tracking-widest uppercase">
                 Real Estates
               </span>
             </div>
           </Link>
 
-          <h1 className="font-heading text-3xl font-bold text-white">Create New Password</h1>
-          <p className="mt-2 text-xs text-slate-400">
+          <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-white">Create New Password</h1>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             Enter your new password below to regain access to your account.
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8">
           {isSubmitted ? (
             <div className="text-center py-6 space-y-4">
               <div className="w-14 h-14 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)] flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-[var(--navy)]">Password Reset Complete</h3>
-              <p className="text-slate-500 text-xs">
+              <h3 className="text-xl font-bold text-[var(--navy)] dark:text-white">Password Reset Complete</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-xs">
                 Your password has been successfully updated. You can now log in with your new credentials.
               </p>
 
@@ -116,7 +116,7 @@ function ResetPasswordContent() {
           ) : (
             <>
               {errorMessage && (
-                <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2.5 text-red-700 text-xs font-medium">
+                <div className="mb-5 p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl flex items-center gap-2.5 text-red-700 dark:text-red-400 text-xs font-medium">
                   <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
                   <span>{errorMessage}</span>
                 </div>
@@ -124,11 +124,11 @@ function ResetPasswordContent() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="password">
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5" htmlFor="password">
                     New Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <input
                       id="password"
                       type="password"
@@ -137,17 +137,17 @@ function ResetPasswordContent() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                      className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="confirmPassword">
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5" htmlFor="confirmPassword">
                     Confirm New Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <input
                       id="confirmPassword"
                       type="password"
@@ -155,7 +155,7 @@ function ResetPasswordContent() {
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
+                      className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--emerald)]/30 focus:border-[var(--emerald)]"
                     />
                   </div>
                 </div>
@@ -188,7 +188,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[var(--navy)]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-[var(--navy)]" />}>
       <ResetPasswordContent />
     </Suspense>
   );
