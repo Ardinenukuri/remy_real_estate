@@ -488,17 +488,17 @@ function CustomerProfileContent() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-950/40 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 space-y-3">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+          <div className="bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/40 dark:to-slate-900 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-6 space-y-3">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
               <Sparkles className="w-4 h-4" />
               Need Assistance?
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               If you require changes to your registered email or need concierge property matching support, reach out to our team.
             </p>
             <a
               href="mailto:support@remy.com"
-              className="inline-block text-xs font-bold text-emerald-400 hover:underline"
+              className="inline-block text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
             >
               Contact Support →
             </a>

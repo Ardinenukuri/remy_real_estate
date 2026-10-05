@@ -118,7 +118,7 @@ export default function HomePage() {
         {/* Floating Top Metrics Bar */}
         <div className="absolute top-0 left-0 right-0 pt-24 pointer-events-none">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end">
-            <div className="hidden lg:flex items-center gap-8 py-3 px-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+            <div className="hidden lg:flex items-center gap-8 py-3 px-6 bg-black/30 backdrop-blur-md rounded-2xl border border-white/20">
               <div className="text-center">
                 <div className="text-white font-bold text-lg leading-none">1,200+</div>
                 <div className="text-white/80 text-xs mt-1">Properties Listed</div>
@@ -141,13 +141,19 @@ export default function HomePage() {
             Rwanda's #1 Real Estate Platform
           </span>
 
-          <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-white font-bold leading-tight text-balance mb-4">
+          <h1
+            className="font-heading text-4xl sm:text-5xl lg:text-6xl text-white font-bold leading-tight text-balance mb-4"
+            style={{ textShadow: '0 2px 16px rgba(0,0,0,0.45)' }}
+          >
             Find Your Dream Space
             <br />
             <span className="text-[var(--emerald)]">with Verified</span> Listings
           </h1>
 
-          <p className="text-white/90 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p
+            className="text-white/90 text-lg max-w-2xl mx-auto mb-10 leading-relaxed"
+            style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}
+          >
             Search top-tier residential, commercial, and luxury properties with direct realtor communication across Rwanda.
           </p>
 
